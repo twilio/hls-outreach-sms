@@ -59,30 +59,28 @@ exports.handler = async function(context, event, callback) {
         .fetch()
         .then((ec) => {
           if (body.length === 0) {
-            const headers = Object.keys(ec.context.flow.data).toString() + ',question_id,response,response_timestamp\n';
+            const headers = Object.keys(ec.context.flow.data).toString() + ',question_id,response,response_timestamp';
             console.log(THIS, headers);
             body.push(headers);
             patient = Object.values(ec.context.flow.data).toString();
           }
           for (q of Object.keys(ec.context.widgets)) {
-            console.log(THIS, q);
-
             w = ec.context.widgets[q]
-
-            console.log(w);
+            //console.log(w);
             if (Object.keys(w).length === 0) continue;
 
-            console.log(THIS, w.outbound.DateCreated);
-            console.log(THIS, w.inbound ? w.inbound.Body : '');
+            const question_id = q;
+            const response_timestmap = w.outbound.DateCreated;
+            const response = w.inbound ? w.inbound.Body : '';
+            const row = `,${question_id},${response},${response_timestmap}`;
+            body.push(`${patient},${row}`);
           }
-          body.push(patient + ',Q,Yes,2021-10-08T03:37:36Z\n');
         });
     }
     const response = new Twilio.Response();
     response.setStatusCode(200);
     response.appendHeader('Content-Type', 'application/csv')
-    console.log(THIS, body.toString());
-    response.setBody(body.toString());
+    response.setBody(body.join('\n'));
 
     callback(null, response);
 
