@@ -64,7 +64,6 @@ async function checkStudioFlow() {
       $('#flow-deployed').show();
       $('#flow-deploy').hide();
       $('#flow-open').attr('href', `https://www.twilio.com/console/studio/flows/${sid}`);
-      $('#flow-rest-api-url').text(`https://studio.twilio.com/v2/Flows/${sid}/Executions`);
     }
   } catch (err) {
     console.log(THIS, err);
@@ -113,6 +112,7 @@ async function deployStudioFlow(e) {
   }
 }
 
+
 /*
  * --------------------------------------------------------------------------------------------------------------
  * select specified flowName and check Flow deployment
@@ -126,10 +126,33 @@ async function deployStudioFlow(e) {
 async function selectFlow() {
   const THIS = selectFlow.name + ' -';
   console.log(THIS);
+  try {
+    const selectedFlowName = $('#flow-selector').val();
 
-  console.log(THIS, 'selected:', $('#flow-selector').val());
+    // reset section
+    $('.flow-loader').hide();
+    $('#flow-deploy').hide();
+    $('#flow-deployed').hide();
 
-  checkStudioFlow();
+    checkStudioFlow();
+
+    const response = await fetch('/deployment/assign-phone2flow', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({flowName: selectedFlowName}),
+    });
+    if (!response.ok) {
+      throw Error(response.statusText);
+    }
+    console.log(THIS, await response.text());
+
+
+  } catch (err) {
+    console.log(THIS, err);
+  }
 }
 
 /*
@@ -185,8 +208,7 @@ function updateFileInfo() {
   console.log("selected file count: " + fileList.length);
   file = fileList[0];
   document.getElementById("file-name").innerHTML = file.name;
-  document.getElementById("file-size").innerHTML = file.size;
-  document.getElementById("file-type").innerHTML = file.type;
+  document.getElementById("file-size").innerHTML = '(' + file.size + ' bytes)';
 
   // const reader = new FileReader();
   // reader.readAsText(file);
@@ -204,7 +226,8 @@ function updateFileInfo() {
   // reader.onerror = function() {
   //   alert('Unable to read ' + file.name);
   // }
-  document.getElementById("process-file").disabled = false;
+
+  $('#process-file').prop('disabled', false);
 };
 
 /*
@@ -248,6 +271,8 @@ async function processFile(e) {
   console.log(THIS, 'file: ' + file.name);
   if (file.size == 0) return;
 
+  const selectedFlowName = $('#flow-selector').val();
+
   const reader = new FileReader();
   reader.readAsText(file);
   reader.onload = function(event) {
@@ -266,14 +291,22 @@ async function processFile(e) {
     const jsonObj = JSON.parse(jsonText);
     //console.log(jsonObj);
     for (let j of jsonObj) {
+      j.outreach_id = file.name;
       console.log(j);
+      console.log(JSON.stringify({
+        flowName: selectedFlowName,
+        patient: j,
+      }));
       fetch(`/execute-flow`, {
         method: 'POST',
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({'patient': j}),
+        body: JSON.stringify({
+          flowName: selectedFlowName,
+          patient: j,
+        }),
       })
         .then((response) => response.text())
         .then((t) => {
@@ -297,32 +330,42 @@ async function processFile(e) {
  * --------------------------------------------------------------------------------------------------------------
  */
 async function downloadResponses(e) {
-  console.log('entering downloadResponses');
+  const THIS = downloadResponses.name + ' -';
+  console.log(THIS);
+  try {
+    const selectedFlowName = $('#flow-selector').val();
 
-  fetch(`/download-responses?flow_sid=FW1234`, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({'outreach_id': 'hello'}),
-  })
-    .then(async (response) => {
-      dataType = response.type;
-      console.log(response.type);
-      //console.log(await response.text());
-      const binaryData = [];
-      binaryData.push(await response.text());
-      const downloadLink = document.createElement('a');
-      downloadLink.href = window.URL.createObjectURL(new Blob(binaryData, {type: dataType}));
-      downloadLink.setAttribute('download', 'reponses.csv');
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      downloadLink.remove();
+    fetch(`/collect-responses`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({flowName: selectedFlowName}),
     })
-    .catch((err) => {
-      console.log(err);
-    });
+      .then(async (response) => {
+        dataType = response.type;
+        console.log(response.type);
+        //console.log(await response.text());
+        const binaryData = [];
+        binaryData.push(await response.text());
+        const downloadLink = document.createElement('a');
+        downloadLink.href = window.URL.createObjectURL(new Blob(binaryData, {type: dataType}));
+        downloadLink.setAttribute('download', 'outreach-responses.csv');
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        downloadLink.remove();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
+  } catch (err) {
+    console.log(THIS, err);
+  }
+
+
+
 }
 
 
