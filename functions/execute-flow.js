@@ -25,16 +25,36 @@ exports.handler = async function(context, event, callback) {
   console.time(THIS);
   try {
     assert(event.flowName, 'missing event.flowName!!!');
+    assert(event.patient, 'missing event.patient!!!');
 
     // ---------- parameters
     context.flowName = event.flowName;
     const FLOW_SID = await getParam(context, 'TWILIO_FLOW_SID');
-    // FLOW_SID will be 'null' if associated flow is not found
+    assert(FLOW_SID, `not found flow.friendlyName=${event.flowName}!!!`);
+    const FROM_PHONE = await getParam(context, 'TWILIO_PHONE_NUMBER');
 
-    response = {
-      'status': 200
-    }
-    callback(null, response);
+    const client = context.getTwilioClient();
+
+    const to_phone = await client.lookups.v1.phoneNumbers(event.patient.patient_phone)
+      .fetch({countryCode: 'US'})
+      .then(phone => phone.phoneNumber);
+    console.log(to_phone);
+
+    client.studio.flows(FLOW_SID)
+      .executions
+      .create({
+        to: to_phone,
+        from: FROM_PHONE,
+        parameters: JSON.stringify(event.patient),
+      })
+      .then(execution => {
+        console.log(THIS, `success: ${execution.sid}`);
+        response = {
+          'status': 200
+        }
+        callback(null, response);
+      });
+
   } catch (err) {
     console.log(THIS, err);
     callback(err);

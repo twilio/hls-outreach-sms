@@ -1,77 +1,91 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <link rel="stylesheet" href="./style.css" />
-    <title>Twilio Outreach Solution Blueprint</title>
-  </head>
-  <body>
-    <header><h1>Twilio Outreach Solution Blueprint</h1></header>
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script type="application/javascript" src="/controller.js"></script>
-    <main>
-      <div>
-        <h2>Selected Studio Flow</h2>
-        <form>
-          Selected Studio Flow:
-          <select id="flow-selector" onchange="selectFlow(null);">
-          </select>
-        </form>
-        <script>
-          fillFlowSelector();
-        </script>
-        <br/>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>Twilio Outreach Solution Blueprint</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
+  <link rel="stylesheet" href="https://unpkg.com/normalize.css/normalize.css">
+  <link rel="stylesheet" href="https://unpkg.com/milligram/dist/milligram.min.css">
+  <link rel="stylesheet" href="./style.css" />
+</head>
+
+<body>
+  <header>
+    <h1>Twilio Outreach Solution Blueprint</h1>
+    <div id="hipaa-disclaimer" style="margin-bottom: 20px;">
+      Note that this application is designed for prototyping purposes only and you should<br/>
+      <a href="https://ahoy.twilio.com/outreach-sms" target="_blank">consult with a Twilio Expert</a>
+      before publicly offering this service in a production context.
+    </div>
+    <p>
+      This application is designed to support healthcare provider organizations
+      that are interested in building an sms outreach solution.
+      The app packages together the core components of a deployable prototype for basic,
+      two-way SMS communication between patient and provider.
+    </p>
+    <p id="simulation-text">
+      This page will walk you through the remainder of the app installation. Once installation
+      is complete, you can use the event simulation steps in order to test that everything is working
+      appropriately and to see the app in action. You must be logged
+      into the application in order to both complete installation and to run the simulation steps.
+    </p>
+  </header>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script type="application/javascript" src="/controller.js"></script>
+  <main>
+    <section>
+      <h4>Selected Studio Flow:
+      <select id="flow-selector" onchange="selectFlow(null);"></select>
+      </h4>
+      <div class="flow-loader"></div>
+      <div id="flow-deploy" style="display: none;" class="deployer">
+        <h5>Your Studio Flow is not yet deployed</h5>
+        <a class="button" onclick="deployStudioFlow(event);">Deploy Studio Flow</a>
+        <div id="flow-loader button-loader" style="display: none;"></div>
       </div>
-
-      <section>
-        <div class="flow-loader"></div>
-        <div id="flow-deploy" style="display: none;" class="deployer">
-          <h4>Your Studio Flow is not yet deployed</h4>
-          <a class="button" onclick="deployStudioFlow(event);">Deploy Studio Flow</a>
-          <div id="flow-loader button-loader" style="display: none;"></div>
-        </div>
-        <div id="flow-deployed" style="display: none;" class="deployer">
-          <h4><span class="checkmark">&#10003;</span> Your Studio Flow is deployed</h4>
-          <a id="flow-open" class="button button-outline" href="" target="_blank">Open Studio Flow</a>
-          <p><b>FLOW REST API URL:</b>&nbsp<i id="flow-rest-api-url"></i></p>
-        </div>
-      </section>
-
-      <div>
-        <h2>Upload</h2>
-
-        <div>
-          <input type="file" id="patient-file" accept="text/csv" style="display:none">
-          <button class="button" id="select-file">Select csv file to upload</button>
-          <p>
-            selected file name: <span id="file-name"></span><br/>
-            selected file size (bytes): <span id="file-size">0</span><br/>
-            selected file type: <span id="file-type"></span><br/>
-          </p>
-          <button class="button" id="process-file" disabled>Process File</button>
-        </div>
-        <script>
-          const selectedFile = document.getElementById('patient-file').files[0];
-          console.log(selectedFile);
-        </script>
+      <div id="flow-deployed" style="display: none;" class="deployer">
+        <h5><span class="checkmark">&#10003;</span> Your Studio Flow is deployed</h5>
+        <a id="flow-open" class="button button-outline" href="" target="_blank">Open Studio Flow</a>
       </div>
+    </section>
 
+    <section id="upload">
+      <h4>Upload</h4>
       <div>
-        <h2>Download</h2>
-
-        <button class="button" id="downloadResponses">Download Responses</button>
-        <br/>
+        <input type="file" id="patient-file" accept="text/csv" style="display:none">
+        <button class="button" id="select-file">Select csv file to upload</button>
+        <h5><b>selected file:</b>
+        <span id="file-name"></span> <span id="file-size"></span>
+        </h5>
+        <button class="button" id="process-file" disabled>Upload & Process File</button>
       </div>
-    </main>
+      <script>
+        const selectedFile = document.getElementById('patient-file').files[0];
+        console.log('selectedFile=', selectedFile);
+      </script>
+    </section>
 
-    <footer>
-      <p>
-        Made with 💖 by your friends at
-        <a href="https://www.twilio.com">Twilio</a>
-      </p>
-    </footer>
-  </body>
+    <section id="download">
+      <h4>Download</h4>
+
+      <button class="button" id="downloadResponses">Download Responses</button>
+    </section>
+
+    <script>
+      initialize();
+    </script>
+  </main>
+
+  <footer>
+    <p>
+      Made with 💖 by your friends at
+      <a href="https://www.twilio.com">Twilio</a>
+    </p>
+  </footer>
+</body>
+
 </html>
