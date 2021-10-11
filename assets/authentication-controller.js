@@ -5,7 +5,7 @@
 let accessToken = null;
 let refreshToken = null;
 let userActive = true;
-const ACCESS_TOKEN_REFRESH_INTERVAL = 24 * 60 * 60;
+const ACCESS_TOKEN_REFRESH_INTERVAL = 20 * 60 * 1000;
 
 async function mfa(e) {
     e.preventDefault();

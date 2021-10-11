@@ -142,7 +142,7 @@ async function selectFlow() {
         Accept: 'application/json',
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({flowName: selectedFlowName}),
+      body: JSON.stringify({flowName: selectedFlowName, token: accessToken}),
     });
     if (!response.ok) {
       throw Error(response.statusText);
@@ -307,6 +307,7 @@ async function processFile(e) {
         body: JSON.stringify({
           flowName: selectedFlowName,
           patient: j,
+          token: accessToken
         }),
       })
         .then((response) => response.text())
@@ -342,7 +343,7 @@ async function downloadResponses(e) {
         Accept: 'application/json',
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({flowName: selectedFlowName}),
+      body: JSON.stringify({flowName: selectedFlowName, token: accessToken}),
     })
       .then(async (response) => {
         dataType = response.type;
