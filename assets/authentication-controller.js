@@ -36,7 +36,7 @@ async function mfa(e) {
             $('#mfa-input').val('');
             $('#auth-successful').show();
             $('main').show();
-            fillFlowSelector();
+            initialize();
         })
         .catch((err) => console.log(err));
 }
@@ -80,7 +80,7 @@ async function login(e) {
                 scheduleTokenRefresh();
                 // Post AUTHENTICATION code goes here
                 $('main').show();
-                fillFlowSelector();
+                initialize();
             } else {
                 $('#mfa-form').show();
                 $('#mfa-input').focus();

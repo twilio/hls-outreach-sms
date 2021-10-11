@@ -46,7 +46,7 @@
         "service": "{{trigger.message.InstanceSid}}",
         "channel": "{{trigger.message.ChannelSid}}",
         "from": "{{flow.channel.address}}",
-        "body": "Hello, Patti. This is your Care Manager with Owl Health, checking in since your discharge. \n\nHave you scheduled a follow-up appointment with your PCP?\n\nPlease reply YES or NO.",
+        "body": "Hello, {{flow.data.patient_first_name}}. This is your Care Manager with Owl Health, checking in since your discharge. \n\nHave you scheduled a follow-up appointment with your PCP?\n\nPlease reply YES or NO.",
         "timeout": "360"
       }
     },

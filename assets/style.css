@@ -10,10 +10,12 @@
 }
 
 body {
-  font-family: -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto,
-    'Helvetica Neue', Arial, sans-serif;
   color: #0d122b;
   border-top: 5px solid #f22f46;
+  padding: 20px;
+  min-height: 100vh;
+  max-width: 1024px;
+  margin: 0 auto;
 }
 
 header {
@@ -28,9 +30,11 @@ header h1 {
   border-bottom: 1px solid rgba(148, 151, 155, 0.2);
 }
 
+
 a {
   color: #008cff;
 }
+
 
 main {
   margin: 0 auto 6em;
@@ -43,12 +47,9 @@ main p {
 }
 
 main p code {
-  font-size: 16px;
-  font-family: 'Fira Mono', monospace;
   color: #f22f46;
   background-color: #f9f9f9;
   box-shadow: inset 0 0 0 1px #e8e8e8;
-  font-size: inherit;
   line-height: 1.2;
   padding: 0.15em 0.4em;
   border-radius: 4px;
@@ -72,8 +73,48 @@ footer p {
   margin: 0 2em;
 }
 
-.authentication{
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 2em;
- }
+/*
+ * flow deployer styles
+ */
+#hipaa-disclaimer {
+  border: 2px solid rgb(136, 145, 170);
+  padding: 20px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+span.checkmark {
+  color: rgb(20, 176, 83);
+}
+
+#flow-selector {
+  width: 200px;
+  font-size: 18px;
+}
+
+.flow-loader {
+  border: 4px solid rgb(244, 244, 246);
+  border-top: 4px solid rgb(18, 28, 45);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 5px;
+  margin-top: -5px;
+}
+
+.deployer {
+  margin: 10px 0;
+  margin-bottom: 30px;
+}
+
+#flow-deploy .button.loading {
+  background: rgb(244, 244, 246);
+  border: 1px solid rgb(244, 244, 246);
+  color: rgb(96, 107, 133);
+  box-shadow: none;
+  cursor: default;
+}

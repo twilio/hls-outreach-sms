@@ -19,6 +19,8 @@
  * sets environment variable
  * --------------------------------------------------------------------------------
  */
+const assert = require("assert");
+
 async function setParam(context, key, value) {
   const onLocalhost = Boolean(
     context.DOMAIN_NAME && context.DOMAIN_NAME.startsWith('localhost')
@@ -217,6 +219,24 @@ function removeFlowFriendlyName(context, friendlyName) {
   return friendlyName;
 }
 
+// --------------------------------------------------------------------------------
+async function assignPhone2Flow(context, flow_sid) {
+  const PHONE_NUMBER = await getParam(context, 'TWILIO_PHONE_NUMBER');
+
+  const client = context.getTwilioClient();
+
+  const flow = await client.studio.flows(flow_sid).fetch();
+
+  const phoneList = await client.incomingPhoneNumbers.list();
+  const phone = phoneList.find(p => p.phoneNumber === PHONE_NUMBER);
+  assert(phone, `Phone number ${PHONE_NUMBER} not found!!!`);
+
+  await client.incomingPhoneNumbers(phone.sid).update({
+    smsUrl: flow.webhookUrl
+  });
+
+  return phone.sid;
+}
 
 // --------------------------------------------------------------------------------
 module.exports = {
@@ -225,4 +245,5 @@ module.exports = {
   getFlowFriendlyNames,
   addFlowFriendlyName,
   removeFlowFriendlyName,
+  assignPhone2Flow,
 };
