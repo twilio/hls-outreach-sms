@@ -49,7 +49,7 @@ async function checkStudioFlow() {
         Accept: 'application/json',
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({flowName: selectedFlowName}),
+      body: JSON.stringify({flowName: selectedFlowName, token: accessToken}),
     });
     if (!response.ok) {
       throw Error(response.statusText);
@@ -97,7 +97,7 @@ async function deployStudioFlow(e) {
         Accept: 'application/json',
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({flowName: selectedFlowName}),
+      body: JSON.stringify({flowName: selectedFlowName, token: accessToken}),
     });
     if (!response.ok) {
       throw Error(response.statusText);
@@ -154,6 +154,7 @@ async function fillFlowSelector() {
         Accept: 'application/json',
         'Content-Type': 'application/json',
       },
+      body: JSON.stringify({token:accessToken})
     });
     const flows = await response.json();
     for (f of flows) {

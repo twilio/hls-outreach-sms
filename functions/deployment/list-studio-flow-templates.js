@@ -17,11 +17,23 @@
 const assert = require('assert');
 const path_helper = Runtime.getFunctions()['helpers'].path;
 const { getParam } = require(path_helper);
+const { path } = Runtime.getFunctions()["authentication-helper"];
+const { isValidAppToken } = require(path);
 
 exports.handler = async function (context, event, callback) {
   const THIS = 'deployment/list-studio-flow-templates:';
   console.log(THIS);
   console.time(THIS);
+
+  /* Following code checks that a valid token was sent with the API call */
+  if (!isValidAppToken(event.token, context)) {
+    const response = new Twilio.Response();
+    response.appendHeader('Content-Type', 'application/json');
+    response.setStatusCode(401);
+    response.setBody({message: 'Invalid or expired token'});
+    return callback(null, response);
+  }
+
   try {
     const SERVICE_SID = await getParam(context, 'TWILIO_SERVICE_SID');
     assert(SERVICE_SID, 'Service not yet deployed!!!');
