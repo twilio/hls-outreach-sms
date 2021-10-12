@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="https://unpkg.com/normalize.css/normalize.css">
   <link rel="stylesheet" href="https://unpkg.com/milligram/dist/milligram.min.css">
   <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./authentication.css" />
 </head>
 
 <body>
@@ -35,8 +36,37 @@
   </header>
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script type="application/javascript" src="/authentication-controller.js"></script>
   <script type="application/javascript" src="/controller.js"></script>
-  <main>
+  <div class="authentication">
+    <div id="password-form">
+      <p id="login-error" style="color:red"></p>
+      <form>
+        <div>
+          <label for="password-input">Password:
+            <input id="password-input" type="password" name="password" style="width: 400px">
+          </label>
+        </div>
+        <button class="button" onclick="login(event)">Authenticate</button>
+      </form>
+    </div>
+    <div id="mfa-form" style="display: none;">
+      <p>
+        Your password was accepted. For additional security, please enter the security code we sent to your phone.
+      </p>
+      <p id="mfa-error" style="color:red"></p>
+      <form>
+        <div>
+          <label for="mfa-input">
+            <input id="mfa-input" type="text" name="mfacode" style="width: 400px">
+          </label>
+        </div>
+        <button class="button" onclick="mfa(event)">Verify Security Code</button>
+      </form>
+    </div>
+    <p id="auth-successful"  style="display:none">Authenticated successfully</p>
+  </div>
+  <main style="display: none">
     <section>
       <h4>Selected Studio Flow:
       <select id="flow-selector" onchange="selectFlow(null);"></select>
@@ -76,7 +106,7 @@
     </section>
 
     <script>
-      initialize();
+      // initialize();
     </script>
   </main>
 

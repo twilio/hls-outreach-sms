@@ -5,7 +5,7 @@
 let accessToken = null;
 let refreshToken = null;
 let userActive = true;
-const ACCESS_TOKEN_REFRESH_INTERVAL = 24 * 60 * 60;
+const ACCESS_TOKEN_REFRESH_INTERVAL = 20 * 60 * 1000;
 
 async function mfa(e) {
     e.preventDefault();
@@ -35,6 +35,8 @@ async function mfa(e) {
             $('#mfa-form').hide();
             $('#mfa-input').val('');
             $('#auth-successful').show();
+            $('main').show();
+            initialize();
         })
         .catch((err) => console.log(err));
 }
@@ -73,9 +75,12 @@ async function login(e) {
             var decodedToken = parseJwt(accessToken);
             if (decodedToken['aud'] === 'app') {
                 refreshToken = r.refreshToken;
+                accessToken = r.accessToken;
                 $('#auth-successful').show();
                 scheduleTokenRefresh();
                 // Post AUTHENTICATION code goes here
+                $('main').show();
+                initialize();
             } else {
                 $('#mfa-form').show();
                 $('#mfa-input').focus();
