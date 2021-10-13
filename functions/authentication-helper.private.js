@@ -85,7 +85,7 @@ function checkDisableAuthForLocalhost(context) {
 async function getVerifyServiceId(context) {
     const client = context.getTwilioClient();
     let verify_sid = null;
-    if(context.VERIFY_SERVICE_NAME === null || context.VERIFY_SERVICE_NAME === ""){
+    if(context.VERIFY_SERVICE_NAME === undefined || context.VERIFY_SERVICE_NAME === ""){
         context.VERIFY_SERVICE_NAME = context.CUSTOMER_NAME;
         console.log("send mfa code ", context.VERIFY_SERVICE_NAME);
     }
