@@ -336,38 +336,62 @@ async function downloadResponses(e) {
   console.log(THIS);
   try {
     const selectedFlowName = $('#flow-selector').val();
+    const orientation = 'ROW';
+    let body = null;
 
-    fetch(`/collect-responses`, {
+    let response = await fetch(`/collect-responses-header`, {
       method: 'POST',
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({flowName: selectedFlowName, token: accessToken}),
-    })
-      .then(async (response) => {
-        dataType = response.type;
-        console.log(response.type);
-        //console.log(await response.text());
-        const binaryData = [];
-        binaryData.push(await response.text());
-        const downloadLink = document.createElement('a');
-        downloadLink.href = window.URL.createObjectURL(new Blob(binaryData, {type: dataType}));
-        downloadLink.setAttribute('download', 'outreach-responses.csv');
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        downloadLink.remove();
-      })
-      .catch((err) => {
-        console.log(err);
+      body: JSON.stringify({
+        flowName: selectedFlowName,
+        orientation: orientation,
+      }),
+    });
+    body = await response.text();
+
+    response = await fetch(`/list-executions`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        flowName: selectedFlowName,
+      }),
+    });
+    const execution_sids = JSON.parse(await response.text());
+
+    let i = 0;
+    for (esid of execution_sids) {
+      response = await fetch(`/collect-responses-data`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          flowName: selectedFlowName,
+          execution_sid: esid,
+          orientation: orientation,
+        }),
       });
+      const row = await response.text();
+      console.log('downloaded:', ++i);
+      body += row;
+    }
+
+    const downloadLink = document.createElement('a');
+    downloadLink.href = "data:application-octet-stream,"+encodeURIComponent(body);
+    downloadLink.download = 'outreach-responses.csv';
+    downloadLink.click();
+    downloadLink.remove();
 
   } catch (err) {
     console.log(THIS, err);
   }
-
-
-
 }
 
 
@@ -383,7 +407,7 @@ async function initialize() {
   const fileSelect = document.getElementById('select-file');
   fileSelect.addEventListener("click", function(e) {
     if (inputElement) {
-      inputElement.click();
+        inputElement.click();
     }
     e.preventDefault(); // prevent navigation to "#"
   }, false);
