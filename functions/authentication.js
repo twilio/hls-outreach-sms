@@ -116,7 +116,7 @@ function login(context, event, callback) {
             if(err.status === 400)
             {
                 response.setStatusCode(400);
-                response.setBody({message: 'Could not send MFA code, please check configured phone number.'});
+                response.setBody({message: 'ADMINISTRATOR_PHONE is not set, unable to send MFA!.'});
                 return callback(null, response);
             }
             console.log("Could not send MFA code to the phone number", err);
