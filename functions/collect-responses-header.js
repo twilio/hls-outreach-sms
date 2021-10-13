@@ -1,12 +1,12 @@
 /* eslint-disable camelcase */
 /*
  * --------------------------------------------------------------------------------
- * collects outreach responses of studio flow specified via event.flowName
- * This implies that there can only be ONE flow with matching friendly-name
- * within a Twilio account.
+ * collects outreach response header of studio flow specified via event.flowName
+ * & event.orientation
  *
  * event:
- * . flowName: friendly-name of studio flow
+ * .flowName: friendly-name of studio flow
+ * .orientation: ROW|COLUMN
  *
  * returns:
  * - text/csv payload, if successful
@@ -20,7 +20,7 @@ const { path } = Runtime.getFunctions()["authentication-helper"];
 const { isValidAppToken } = require(path);
 
 exports.handler = async function(context, event, callback) {
-  const THIS = 'collect-responses -';
+  const THIS = 'collect-responses-header -';
   console.log(THIS);
   console.time(THIS);
   /* Following code checks that a valid token was sent with the API call */
@@ -33,6 +33,8 @@ exports.handler = async function(context, event, callback) {
   }
   try {
     assert(event.flowName, 'missing event.flowName!!!');
+    assert(event.orientation, 'missing event.orientation!!!');
+    assert(['ROW', 'COLUMN'].includes(event.orientation), 'event.orientation not ROW|COLUMN!!!');
 
     // ---------- parameters
     context.flowName = event.flowName;
@@ -43,60 +45,62 @@ exports.handler = async function(context, event, callback) {
     }
 
     const client = context.getTwilioClient();
-    const executions = await client.studio.v2.flows(FLOW_SID).executions.list();
+    // latest flow revision is returned first
+    const flow = await client.studio.v2.flows(FLOW_SID).revisions('LatestPublished').fetch();
+    const question_ids = flow.definition.states
+      .filter(q => q.type === 'send-and-wait-for-reply')
+      .map(q => q.name);
+    console.log(THIS, question_ids);
 
+    const executions = await client.studio.v2.flows(FLOW_SID).executions.list();
     console.log(THIS, `found executions: ${executions.length}`);
     if (executions.length === 0) {
       const response = new Twilio.Response();
       response.setStatusCode(200);
       response.appendHeader('Content-Type', 'application/csv')
-      // TODO: put headres from flow.data here
-      response.setBody('');
+      response.setBody('\n');
 
-      callback(null, response);
-      return;
+      return callback(null, response);
     }
 
-    let body = [];
-    let patient = null;
-    for (e of executions) {
-      if (e.status !== 'ended') continue;
-      console.timeLog(THIS);
-      await client.studio
-        .flows(FLOW_SID)
-        .executions(e.sid)
-        .executionContext()
-        .fetch()
-        .then((ec) => {
-          if (body.length === 0) {
-            const headers = Object.keys(ec.context.flow.data).toString() + ',question_id,response,response_timestamp';
-            console.log(THIS, headers);
-            body.push(headers);
-            patient = Object.values(ec.context.flow.data).toString();
-          }
-          for (q of Object.keys(ec.context.widgets)) {
-            w = ec.context.widgets[q]
-            //console.log(w);
-            if (Object.keys(w).length === 0) continue;
+    const execution = executions.find(e => e.status === 'ended');
+    const ec = await client.studio
+      .flows(FLOW_SID)
+      .executions(execution.sid)
+      .executionContext()
+      .fetch();
 
-            const question_id = q;
-            const response_timestmap = w.outbound.DateCreated;
-            const response = w.inbound ? w.inbound.Body : '';
-            const row = `,${question_id},${response},${response_timestmap}`;
-            body.push(`${patient},${row}`);
-          }
-        });
+    console.log('execution_sid', execution.sid);
+
+    let header = null;
+    switch (event.orientation) {
+      case 'ROW':
+        header = [
+          Object.keys(ec.context.flow.data).toString(),
+          'response_timestamp',
+          'question_id',
+          'response',
+        ].join(',');
+        break;
+      case 'COLUMN':
+        header = [
+          Object.keys(ec.context.flow.data).toString(),
+          'response_timestamp',
+          question_ids.toString()
+        ].join(',');
+        break;
     }
+
     const response = new Twilio.Response();
     response.setStatusCode(200);
     response.appendHeader('Content-Type', 'application/csv')
-    response.setBody(body.join('\n'));
+    response.setBody(header + '\n');
 
-    callback(null, response);
+    return callback(null, response);
 
   } catch (err) {
     console.log(THIS, err);
-    callback(err);
+    return callback(err);
   } finally {
     console.timeEnd(THIS);
   }
