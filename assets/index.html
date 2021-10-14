@@ -92,6 +92,8 @@
         <span id="file-name"></span> <span id="file-size"></span>
         </h5>
         <button class="button" id="process-file" disabled>Upload & Process File</button>
+        <br/>
+        <h5><span id="progress-upload" style="display: none;"></span></h5>
       </div>
       <script>
         const selectedFile = document.getElementById('patient-file').files[0];
@@ -100,9 +102,12 @@
     </section>
 
     <section id="download">
+      <br/>
       <h4>Download</h4>
 
-      <button class="button" id="downloadResponses">Download Responses</button>
+      <button class="button" id="download-responses">Download Responses</button>
+      <br/>
+      <progress id="progress-download" style="display: none;"></progress>
     </section>
 
     <script>
