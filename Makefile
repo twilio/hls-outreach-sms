@@ -20,12 +20,15 @@ targets:
 	@echo ---------- $@
 	@grep '^[A-Za-z0-9\-]*:' Makefile | cut -d ':' -f 1 | sort
 
-
 fetch-service-sid:
 	@echo ---------- $@
 	$(eval SERVICE_SID := $(shell curl https://serverless.twilio.com/v1/Services \
 		--silent --user $(ACCOUNT_SID):$(AUTH_TOKEN) \
 		| jq --raw-output '.services[] | select(.unique_name | contains("'$(APPLICATION_NAME)'")) | .sid'))
+	@if [[ -z '$(SERVICE_SID)' ]]; then \
+		echo "Service named '$(APPLICATION_NAME)' is not deployed!"; \
+		false; \
+	fi
 	@echo SERVICE_SID=$(SERVICE_SID)
 
 

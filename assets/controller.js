@@ -211,24 +211,8 @@ function updateFileInfo() {
   document.getElementById("file-name").innerHTML = file.name;
   document.getElementById("file-size").innerHTML = '(' + file.size + ' bytes)';
 
-  // const reader = new FileReader();
-  // reader.readAsText(file);
-  // reader.onload = function(event) {
-  //   console.log('entering reader.onload');
-  //   console.log(event.target);
-  //   var csv = event.target.result;
-  //   console.log(csv);
-  //   const data = csv => csv.split(/\r?\n/);
-  //   let i = 0;
-  //   for (let row in data) {
-  //     console.log(i++, row);
-  //   }
-  // };
-  // reader.onerror = function() {
-  //   alert('Unable to read ' + file.name);
-  // }
-
   $('#process-file').prop('disabled', false);
+  $('#progress-upload').hide();
 };
 
 /*
@@ -269,61 +253,64 @@ function csv2json(csv){
 async function processFile(e) {
   const THIS = processFile.name + ' -';
   console.log(THIS);
-  console.log(THIS, 'file: ' + file.name);
-  if (file.size == 0) return;
+  try {
+    console.log(THIS, 'file: ' + file.name);
+    if (file.size == 0) return;
 
-  const selectedFlowName = $('#flow-selector').val();
+    $('#progress-upload').show();
+    let n = 0;
 
-  const reader = new FileReader();
-  reader.readAsText(file);
-  reader.onload = function(event) {
-    console.log('entering reader.onload');
-    const csv = event.target.result;
-    console.log(csv);
-    const data = csv.split(/\r?\n/);
-    console.log(data);
-    let i = 0;
-    for (let row of data) {
-      if (row.length === 0) continue; // skip empty rows
-      console.log(i++ + ':' + row);
-    }
-    const jsonText = csv2json(csv);
-    //console.log(jsonText);
-    const jsonObj = JSON.parse(jsonText);
-    //console.log(jsonObj);
-    for (let j of jsonObj) {
-      j.outreach_id = file.name;
-      console.log(j);
-      console.log(JSON.stringify({
-        flowName: selectedFlowName,
-        patient: j,
-      }));
-      fetch(`/execute-flow`, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          flowName: selectedFlowName,
-          patient: j,
-          token: accessToken
-        }),
-      })
-        .then((response) => response.text())
-        .then((t) => {
-          console.log(t);
+    const selectedFlowName = $('#flow-selector').val();
+
+    const reader = new FileReader();
+    reader.readAsText(file);
+    reader.onload = function(event) {
+      console.log(THIS, 'reader.onload');
+      const csv = event.target.result;
+
+      const data = csv.split(/\r?\n/);
+      n = data.filter(r => r.length > 0).length - 1; // # of lines excluding empty line & header
+
+      const jsonText = csv2json(csv);
+      const jsonObj = JSON.parse(jsonText);
+      let i = 0;
+      for (let j of jsonObj) {
+        // $('#progress-upload').attr({
+        //   value: ++i,
+        //   label: `uploaded ${i} of ${n}`
+        // });
+
+        j.outreach_id = file.name;
+        fetch(`/execute-flow`, {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            flowName: selectedFlowName,
+            patient: j,
+            token: accessToken
+          }),
+        })
+        .then((response) => {
+          console.log(THIS, ++i, response);
+          $('#progress-upload').text(`uploaded ${n} rows`);
         })
         .catch((err) => {
           console.log(err);
         });
+      }
+    };
+    reader.onerror = function() {
+      alert('Unable to read ' + file.name);
     }
-  };
-  reader.onerror = function() {
-    alert('Unable to read ' + file.name);
-  }
 
-  document.getElementById("process-file").disabled = true;
+    $('#process-file').prop('disabled', true);
+
+  } catch (err) {
+    console.log(THIS, err);
+  }
 };
 
 /*
@@ -335,6 +322,9 @@ async function downloadResponses(e) {
   const THIS = downloadResponses.name + ' -';
   console.log(THIS);
   try {
+    $('#download-responses').prop('disabled', true);
+    $('#progress-download').show();
+
     const selectedFlowName = $('#flow-selector').val();
     const orientation = 'ROW';
     let body = null;
@@ -348,6 +338,7 @@ async function downloadResponses(e) {
       body: JSON.stringify({
         flowName: selectedFlowName,
         orientation: orientation,
+        token: accessToken,
       }),
     });
     body = await response.text();
@@ -360,9 +351,16 @@ async function downloadResponses(e) {
       },
       body: JSON.stringify({
         flowName: selectedFlowName,
+        token: accessToken,
       }),
     });
     const execution_sids = JSON.parse(await response.text());
+
+    $('#progress-download').attr({
+      max: execution_sids.length,
+      value: 0,
+      label: `downloaded 0 of ${execution_sids.length}`
+    });
 
     let i = 0;
     for (esid of execution_sids) {
@@ -376,10 +374,14 @@ async function downloadResponses(e) {
           flowName: selectedFlowName,
           execution_sid: esid,
           orientation: orientation,
+          token: accessToken,
         }),
       });
       const row = await response.text();
-      console.log('downloaded:', ++i);
+      $('#progress-download').attr({
+        value: ++i,
+        label: `downloaded ${i} of ${execution_sids.length}`
+      });
       body += row;
     }
 
@@ -391,6 +393,9 @@ async function downloadResponses(e) {
 
   } catch (err) {
     console.log(THIS, err);
+  } finally {
+    $('#progress-download').hide();
+    $('#download-responses').prop('disabled', false);
   }
 }
 
@@ -415,6 +420,6 @@ async function initialize() {
   // eventListener must be placed AFTER addEventListener
   document.getElementById("process-file").addEventListener("click", processFile);
 
-  const downloadButton = document.getElementById('downloadResponses');
+  const downloadButton = document.getElementById('download-responses');
   downloadButton.addEventListener("click", downloadResponses);
 }

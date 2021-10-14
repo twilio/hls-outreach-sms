@@ -84,34 +84,17 @@ function checkDisableAuthForLocalhost(context) {
  */
 async function getVerifyServiceId(context) {
     const client = context.getTwilioClient();
-    let verify_sid = null;
-    if(context.VERIFY_SERVICE_NAME === undefined || context.VERIFY_SERVICE_NAME === ""){
+    if (!context.VERIFY_SERVICE_NAME) {
         context.VERIFY_SERVICE_NAME = context.CUSTOMER_NAME;
-        console.log("send mfa code ", context.VERIFY_SERVICE_NAME);
+        console.log("using CUSTOMER_NAME for VERIFY_SERVICE_NAME");
     }
-    await client.verify.services.list().then((services) => {
-        services.forEach((s) => {
-            if (s.friendlyName === context.VERIFY_SERVICE_NAME) {
-                verify_sid = s.sid;
-            }
-        });
-    }).catch(function(err) {
-        console.log("Error ", err);
-    });
-    if (verify_sid !== null) {
-        return verify_sid;
-    }
+    const services = await client.verify.services.list();
+    const service = services.find(s => s.friendlyName === context.VERIFY_SERVICE_NAME);
+    if (service) return service.sid;
 
-    await client.verify.services
-        .create({ friendlyName: context.VERIFY_SERVICE_NAME })
-        .then((result) => {
-            verify_sid = result.sid;
-        });
-    if (verify_sid !== null) {
-        return verify_sid;
-    }
-    console.log('Unable to create a Twilio Verify Service!!! ABORTING!!! ');
-    return null;
+    console.log(`create verfiy service named: ${context.VERIFY_SERVICE_NAME}`);
+    const si = await client.verify.services.create({friendlyName: context.VERIFY_SERVICE_NAME});
+    if (si) return si.sid;
 }
 // -----------------------------------------------------
 

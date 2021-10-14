@@ -118,3 +118,40 @@ span.checkmark {
   box-shadow: none;
   cursor: default;
 }
+
+/*
+ * progress bar with text
+ */
+progress {
+  text-align: center;
+  height: 1.5em;
+  width: 50%;
+  -webkit-appearance: none;
+  border: none;
+
+  /* Set the progressbar to relative */
+  position:relative;
+}
+
+progress:before {
+  content: attr(label);
+  font-size: 1em;
+  vertical-align: 0;
+
+  /*Position text over the progress bar */
+  position:absolute;
+  left:0;
+  right:0;
+}
+
+progress::-webkit-progress-bar {
+  background-color: #ffaadd;
+}
+
+progress::-webkit-progress-value {
+  background-color: #ff0000;
+}
+
+progress::-moz-progress-bar {
+  background-color: #ff0000;
+}
