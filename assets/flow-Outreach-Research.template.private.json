@@ -1,0 +1,385 @@
+{
+    "description": "template broadcast flow",
+    "states": [
+      {
+        "name": "Trigger",
+        "type": "trigger",
+        "transitions": [
+          {
+            "event": "incomingMessage"
+          },
+          {
+            "event": "incomingCall"
+          },
+          {
+            "next": "Hello",
+            "event": "incomingRequest"
+          }
+        ],
+        "properties": {
+          "offset": {
+            "x": 690,
+            "y": -410
+          }
+        }
+      },
+      {
+        "name": "Hello",
+        "type": "send-message",
+        "transitions": [
+          {
+            "next": "Age",
+            "event": "sent"
+          },
+          {
+            "event": "failed"
+          }
+        ],
+        "properties": {
+          "offset": {
+            "x": -240,
+            "y": -150
+          },
+          "service": "{{trigger.message.InstanceSid}}",
+          "channel": "{{trigger.message.ChannelSid}}",
+          "from": "{{flow.channel.address}}",
+          "to": "{{contact.channel.address}}",
+          "body": "Hello, {{flow.data.patient_first_name}}. \nThank you for your interest in participating in the Owl Health Kidney Disease clinical trial. In order to determine your baseline eligibility for the study, we need to ask you a few preliminary questions."
+        }
+      },
+      {
+        "name": "Age",
+        "type": "send-and-wait-for-reply",
+        "transitions": [
+          {
+            "next": "split_Age",
+            "event": "incomingMessage"
+          },
+          {
+            "event": "timeout"
+          },
+          {
+            "event": "deliveryFailure"
+          }
+        ],
+        "properties": {
+          "offset": {
+            "x": 160,
+            "y": -150
+          },
+          "service": "{{trigger.message.InstanceSid}}",
+          "channel": "{{trigger.message.ChannelSid}}",
+          "from": "{{flow.channel.address}}",
+          "body": "Are you between the ages of 18 and 55 years old?\n\nPlease reply YES or NO.",
+          "timeout": "360"
+        }
+      },
+      {
+        "name": "split_Age",
+        "type": "split-based-on",
+        "transitions": [
+          {
+            "event": "noMatch"
+          },
+          {
+            "next": "BMI",
+            "event": "match",
+            "conditions": [
+              {
+                "friendly_name": "If value equal_to YES",
+                "arguments": [
+                  "{{widgets.Age.inbound.Body}}"
+                ],
+                "type": "equal_to",
+                "value": "YES"
+              }
+            ]
+          },
+          {
+            "next": "Ineligible",
+            "event": "match",
+            "conditions": [
+              {
+                "friendly_name": "If value equal_to NO",
+                "arguments": [
+                  "{{widgets.Age.inbound.Body}}"
+                ],
+                "type": "equal_to",
+                "value": "NO"
+              }
+            ]
+          }
+        ],
+        "properties": {
+          "input": "{{widgets.Age.inbound.Body}}",
+          "offset": {
+            "x": 120,
+            "y": 110
+          }
+        }
+      },
+      {
+        "name": "Ineligible",
+        "type": "send-message",
+        "transitions": [
+          {
+            "event": "sent"
+          },
+          {
+            "event": "failed"
+          }
+        ],
+        "properties": {
+          "offset": {
+            "x": 400,
+            "y": 640
+          },
+          "service": "{{trigger.message.InstanceSid}}",
+          "channel": "{{trigger.message.ChannelSid}}",
+          "from": "{{flow.channel.address}}",
+          "to": "{{contact.channel.address}}",
+          "body": "Thank you for your time and attention. Unfortunately you are not eligible to participate in this study. \n\nHave a nice day!\n\n- Owl Health"
+        }
+      },
+      {
+        "name": "split_BMI",
+        "type": "split-based-on",
+        "transitions": [
+          {
+            "event": "noMatch"
+          },
+          {
+            "next": "Weight",
+            "event": "match",
+            "conditions": [
+              {
+                "friendly_name": "If value equal_to YES",
+                "arguments": [
+                  "{{widgets.BMI.inbound.Body}}"
+                ],
+                "type": "equal_to",
+                "value": "YES"
+              }
+            ]
+          },
+          {
+            "next": "Ineligible",
+            "event": "match",
+            "conditions": [
+              {
+                "friendly_name": "If value equal_to NO",
+                "arguments": [
+                  "{{widgets.BMI.inbound.Body}}"
+                ],
+                "type": "equal_to",
+                "value": "NO"
+              }
+            ]
+          }
+        ],
+        "properties": {
+          "input": "{{widgets.BMI.inbound.Body}}",
+          "offset": {
+            "x": 620,
+            "y": 130
+          }
+        }
+      },
+      {
+        "name": "BMI",
+        "type": "send-and-wait-for-reply",
+        "transitions": [
+          {
+            "next": "split_BMI",
+            "event": "incomingMessage"
+          },
+          {
+            "event": "timeout"
+          },
+          {
+            "event": "deliveryFailure"
+          }
+        ],
+        "properties": {
+          "offset": {
+            "x": 640,
+            "y": -150
+          },
+          "service": "{{trigger.message.InstanceSid}}",
+          "channel": "{{trigger.message.ChannelSid}}",
+          "from": "{{flow.channel.address}}",
+          "body": "Is your BMI between 18 and 35 (kg/m^2)?\n\nPlease reply YES or NO.",
+          "timeout": "3600"
+        }
+      },
+      {
+        "name": "Weight",
+        "type": "send-and-wait-for-reply",
+        "transitions": [
+          {
+            "next": "split_Weight",
+            "event": "incomingMessage"
+          },
+          {
+            "event": "timeout"
+          },
+          {
+            "event": "deliveryFailure"
+          }
+        ],
+        "properties": {
+          "offset": {
+            "x": 1200,
+            "y": -160
+          },
+          "service": "{{trigger.message.InstanceSid}}",
+          "channel": "{{trigger.message.ChannelSid}}",
+          "from": "{{flow.channel.address}}",
+          "body": "Do you weigh at least 110lbs (50kg)?\n\nPlease reply YES or NO.",
+          "timeout": "3600"
+        }
+      },
+      {
+        "name": "split_Weight",
+        "type": "split-based-on",
+        "transitions": [
+          {
+            "event": "noMatch"
+          },
+          {
+            "next": "Smoker",
+            "event": "match",
+            "conditions": [
+              {
+                "friendly_name": "If value equal_to YES",
+                "arguments": [
+                  "{{widgets.Weight.inbound.Body}}"
+                ],
+                "type": "equal_to",
+                "value": "YES"
+              }
+            ]
+          },
+          {
+            "next": "Ineligible",
+            "event": "match",
+            "conditions": [
+              {
+                "friendly_name": "If value equal_to NO",
+                "arguments": [
+                  "{{widgets.Weight.inbound.Body}}"
+                ],
+                "type": "equal_to",
+                "value": "NO"
+              }
+            ]
+          }
+        ],
+        "properties": {
+          "input": "{{widgets.Weight.inbound.Body}}",
+          "offset": {
+            "x": 1100,
+            "y": 130
+          }
+        }
+      },
+      {
+        "name": "Smoker",
+        "type": "send-and-wait-for-reply",
+        "transitions": [
+          {
+            "next": "split_Smoker",
+            "event": "incomingMessage"
+          },
+          {
+            "event": "timeout"
+          },
+          {
+            "event": "deliveryFailure"
+          }
+        ],
+        "properties": {
+          "offset": {
+            "x": 1700,
+            "y": -170
+          },
+          "service": "{{trigger.message.InstanceSid}}",
+          "channel": "{{trigger.message.ChannelSid}}",
+          "from": "{{flow.channel.address}}",
+          "body": "Are you a non-smoker (defined as an individual who has not smoked previously and/or who has discontinued smoking or the use of nicotine/nicotine-containing products at least 3 months ago)?\n\nPlease reply YES or NO.",
+          "timeout": "3600"
+        }
+      },
+      {
+        "name": "split_Smoker",
+        "type": "split-based-on",
+        "transitions": [
+          {
+            "event": "noMatch"
+          },
+          {
+            "next": "Eligible",
+            "event": "match",
+            "conditions": [
+              {
+                "friendly_name": "If value equal_to YES",
+                "arguments": [
+                  "{{widgets.Smoker.inbound.Body}}"
+                ],
+                "type": "equal_to",
+                "value": "YES"
+              }
+            ]
+          },
+          {
+            "next": "Ineligible",
+            "event": "match",
+            "conditions": [
+              {
+                "friendly_name": "If value equal_to NO",
+                "arguments": [
+                  "{{widgets.Smoker.inbound.Body}}"
+                ],
+                "type": "equal_to",
+                "value": "NO"
+              }
+            ]
+          }
+        ],
+        "properties": {
+          "input": "{{widgets.Smoker.inbound.Body}}",
+          "offset": {
+            "x": 1630,
+            "y": 130
+          }
+        }
+      },
+      {
+        "name": "Eligible",
+        "type": "send-message",
+        "transitions": [
+          {
+            "event": "sent"
+          },
+          {
+            "event": "failed"
+          }
+        ],
+        "properties": {
+          "offset": {
+            "x": 870,
+            "y": 640
+          },
+          "service": "{{trigger.message.InstanceSid}}",
+          "channel": "{{trigger.message.ChannelSid}}",
+          "from": "{{flow.channel.address}}",
+          "to": "{{contact.channel.address}}",
+          "body": "Thank you for your time and attention. You meet the baseline criteria for study participation! Someone will reach out to you within the next 3 days (at this number) to talk more in-depth about your health situation in order to determine if you are eligible for this particular clinical trial, and also to discuss the trial's possible benefits and risks to your health.\n\nHave a nice day!\n\n- Owl Health"
+        }
+      }
+    ],
+    "initial_state": "Trigger",
+    "flags": {
+      "allow_concurrent_calls": true
+    }
+  }

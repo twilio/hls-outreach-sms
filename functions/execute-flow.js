@@ -48,7 +48,6 @@ exports.handler = async function(context, event, callback) {
     const to_phone = await client.lookups.v1.phoneNumbers(event.patient.patient_phone)
       .fetch({countryCode: 'US'})
       .then(phone => phone.phoneNumber);
-    console.log(to_phone);
 
     client.studio.flows(FLOW_SID)
       .executions

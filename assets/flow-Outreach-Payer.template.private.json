@@ -1,0 +1,102 @@
+{
+  "description": "template broadcast flow",
+  "states": [
+    {
+      "name": "Trigger",
+      "type": "trigger",
+      "transitions": [
+        {
+          "event": "incomingMessage"
+        },
+        {
+          "event": "incomingCall"
+        },
+        {
+          "next": "Hello",
+          "event": "incomingRequest"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 50,
+          "y": -390
+        }
+      }
+    },
+    {
+      "name": "Hello",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "Website",
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -240,
+          "y": -150
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "to": "{{contact.channel.address}}",
+        "body": "Hello, {{flow.data.patient_first_name}}, thank you for signing up for Medicare!\n\nBe on the lookout for your welcome packet containing your Medicare card, this will be mailed to you about 2 weeks after your sign up date. You can also print your card by logging into your Medicare account."
+      }
+    },
+    {
+      "name": "Website",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "Goodbye",
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 140,
+          "y": -150
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "to": "{{contact.channel.address}}",
+        "body": "Have questions regarding your Medicare coverage? \n\nWe offer a live chat that can help you get answers. Head over to our website to chat now, or to access other useful resources like a comparison tool for finding Medicare providers in your area, ways to get help with drug costs, recipes to help with healthy eatiing habits, and more."
+      }
+    },
+    {
+      "name": "Goodbye",
+      "type": "send-message",
+      "transitions": [
+        {
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 520,
+          "y": -150
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "to": "{{contact.channel.address}}",
+        "body": "Thanks for letting us reach out and check in. Have a nice day!\n\n- Owl Health"
+      }
+    }
+  ],
+  "initial_state": "Trigger",
+  "flags": {
+    "allow_concurrent_calls": true
+  }
+}

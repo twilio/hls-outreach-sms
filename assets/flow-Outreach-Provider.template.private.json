@@ -12,7 +12,7 @@
           "event": "incomingCall"
         },
         {
-          "next": "PCPAppt",
+          "next": "Hello",
           "event": "incomingRequest"
         }
       ],
@@ -24,11 +24,11 @@
       }
     },
     {
-      "name": "PCPAppt",
+      "name": "FollowUp",
       "type": "send-and-wait-for-reply",
       "transitions": [
         {
-          "next": "split_PCPAppt",
+          "next": "split_FollowUp",
           "event": "incomingMessage"
         },
         {
@@ -40,31 +40,31 @@
       ],
       "properties": {
         "offset": {
-          "x": -670,
-          "y": -140
+          "x": 490,
+          "y": -110
         },
         "service": "{{trigger.message.InstanceSid}}",
         "channel": "{{trigger.message.ChannelSid}}",
         "from": "{{flow.channel.address}}",
-        "body": "Hello, {{flow.data.patient_first_name}}. This is your Care Manager with Owl Health, checking in since your discharge. \n\nHave you scheduled a follow-up appointment with your PCP?\n\nPlease reply YES or NO.",
+        "body": "Our records indicate you have not yet scheduled your follow-up appointment with the cardiologist we referred you to. \n\nHave you scheduled a follow-up visit with a different cardiologist? \n\nPlease reply YES or NO.",
         "timeout": "360"
       }
     },
     {
-      "name": "split_PCPAppt",
+      "name": "split_FollowUp",
       "type": "split-based-on",
       "transitions": [
         {
           "event": "noMatch"
         },
         {
-          "next": "PainLevel",
+          "next": "FollowUp_Yes",
           "event": "match",
           "conditions": [
             {
               "friendly_name": "YES",
               "arguments": [
-                "{{widgets.PCPAppt.inbound.Body}}"
+                "{{widgets.FollowUp.inbound.Body}}"
               ],
               "type": "equal_to",
               "value": "YES"
@@ -72,13 +72,13 @@
           ]
         },
         {
-          "next": "PCPAppt_Call",
+          "next": "FollowUp_Call",
           "event": "match",
           "conditions": [
             {
               "friendly_name": "NO",
               "arguments": [
-                "{{widgets.PCPAppt.inbound.Body}}"
+                "{{widgets.FollowUp.inbound.Body}}"
               ],
               "type": "equal_to",
               "value": "NO"
@@ -87,19 +87,19 @@
         }
       ],
       "properties": {
-        "input": "{{widgets.PCPAppt.inbound.Body}}",
+        "input": "{{widgets.FollowUp.inbound.Body}}",
         "offset": {
-          "x": -670,
+          "x": 500,
           "y": 130
         }
       }
     },
     {
-      "name": "PCPAppt_Call",
+      "name": "FollowUp_Call",
       "type": "send-and-wait-for-reply",
       "transitions": [
         {
-          "next": "split_PCPAppt_Call",
+          "next": "split_FollowUp_Call",
           "event": "incomingMessage"
         },
         {
@@ -111,13 +111,13 @@
       ],
       "properties": {
         "offset": {
-          "x": -770,
-          "y": 430
+          "x": 940,
+          "y": 370
         },
         "service": "{{trigger.message.InstanceSid}}",
         "channel": "{{trigger.message.ChannelSid}}",
         "from": "{{flow.channel.address}}",
-        "body": "Do you have questions, or want to speak with someone about making the follow-up appointment with your PCP?\n\nPlease reply YES or NO.",
+        "body": "Would you like someone to call and help you schedule your follow-up appointment?\n\nPlease reply YES or NO.",
         "timeout": "360"
       }
     },
@@ -126,7 +126,7 @@
       "type": "send-and-wait-for-reply",
       "transitions": [
         {
-          "next": "PainLevel_Call",
+          "next": "split_PainLevel",
           "event": "incomingMessage"
         },
         {
@@ -138,31 +138,31 @@
       ],
       "properties": {
         "offset": {
-          "x": -40,
-          "y": -150
+          "x": -220,
+          "y": -130
         },
         "service": "{{trigger.message.InstanceSid}}",
         "channel": "{{trigger.message.ChannelSid}}",
         "from": "{{flow.channel.address}}",
-        "body": "Consider a scale from 0-10, where 0 is \"no pain\" and 10 is \"the worst pain possible\". \n\nHow would you rate your current pain level?",
-        "timeout": "360"
+        "body": "Consider a scale from 0-10, where 0 is \"no pain\" and 10 is \"the worst pain possible\". \n\nHow would you rate your current pain level? \n(please respond with only a single number)",
+        "timeout": "20"
       }
     },
     {
-      "name": "split_PCPAppt_Call",
+      "name": "split_FollowUp_Call",
       "type": "split-based-on",
       "transitions": [
         {
           "event": "noMatch"
         },
         {
-          "next": "PCPAppt_Call_Yes",
+          "next": "FollowUp_Call_Yes",
           "event": "match",
           "conditions": [
             {
               "friendly_name": "YES",
               "arguments": [
-                "{{widgets.PCPAppt_Call.inbound.Body}}"
+                "{{widgets.FollowUp_Call.inbound.Body}}"
               ],
               "type": "equal_to",
               "value": "YES"
@@ -170,13 +170,13 @@
           ]
         },
         {
-          "next": "PainLevel",
+          "next": "FollowUp_Call_No",
           "event": "match",
           "conditions": [
             {
               "friendly_name": "NO",
               "arguments": [
-                "{{widgets.PCPAppt_Call.inbound.Body}}"
+                "{{widgets.FollowUp_Call.inbound.Body}}"
               ],
               "type": "equal_to",
               "value": "NO"
@@ -185,10 +185,10 @@
         }
       ],
       "properties": {
-        "input": "{{widgets.PCPAppt_Call.inbound.Body}}",
+        "input": "{{widgets.FollowUp_Call.inbound.Body}}",
         "offset": {
-          "x": -760,
-          "y": 710
+          "x": 910,
+          "y": 670
         }
       }
     },
@@ -197,7 +197,7 @@
       "type": "send-message",
       "transitions": [
         {
-          "next": "MedAdherence",
+          "next": "FollowUp",
           "event": "sent"
         },
         {
@@ -206,45 +206,22 @@
       ],
       "properties": {
         "offset": {
-          "x": -80,
-          "y": 1010
+          "x": -140,
+          "y": 950
         },
         "service": "{{trigger.message.InstanceSid}}",
         "channel": "{{trigger.message.ChannelSid}}",
         "from": "{{flow.channel.address}}",
         "to": "{{contact.channel.address}}",
-        "body": "Ok, no problem. Someone will reach out to you soon at this phone number to discuss."
+        "body": "Ok, no problem. Someone will reach out to you soon at this number to discuss."
       }
     },
     {
-      "name": "Goodbye",
-      "type": "send-message",
-      "transitions": [
-        {
-          "event": "sent"
-        },
-        {
-          "event": "failed"
-        }
-      ],
-      "properties": {
-        "offset": {
-          "x": 500,
-          "y": 370
-        },
-        "service": "{{trigger.message.InstanceSid}}",
-        "channel": "{{trigger.message.ChannelSid}}",
-        "from": "{{flow.channel.address}}",
-        "to": "{{contact.channel.address}}",
-        "body": "Thank you for letting us check in! We hope you have a speedy recovery. \n\n- Owl Health"
-      }
-    },
-    {
-      "name": "MedAdherence",
+      "name": "PainLevel_High",
       "type": "send-and-wait-for-reply",
       "transitions": [
         {
-          "next": "split_MedAdherence",
+          "next": "split_PainLevel_High",
           "event": "incomingMessage"
         },
         {
@@ -256,207 +233,18 @@
       ],
       "properties": {
         "offset": {
-          "x": 660,
-          "y": -140
+          "x": 140,
+          "y": 400
         },
         "service": "{{trigger.message.InstanceSid}}",
         "channel": "{{trigger.message.ChannelSid}}",
         "from": "{{flow.channel.address}}",
-        "body": "Have you been following your prescribed medication plan?\n\nPlease reply YES or NO (if you were not prescribed any medication, please reply YES).",
+        "body": "We're sorry to hear about your discomfort. Would you like to speak with someone about how you are feeling? \n\nPlease reply YES or NO.",
         "timeout": "360"
       }
     },
     {
-      "name": "split_MedAdherence",
-      "type": "split-based-on",
-      "transitions": [
-        {
-          "event": "noMatch"
-        },
-        {
-          "next": "Goodbye",
-          "event": "match",
-          "conditions": [
-            {
-              "friendly_name": "YES",
-              "arguments": [
-                "{{widgets.MedAdherence.inbound.Body}}"
-              ],
-              "type": "equal_to",
-              "value": "YES"
-            }
-          ]
-        },
-        {
-          "next": "MedAdherence_Call",
-          "event": "match",
-          "conditions": [
-            {
-              "friendly_name": "NO",
-              "arguments": [
-                "{{widgets.MedAdherence.inbound.Body}}"
-              ],
-              "type": "equal_to",
-              "value": "NO"
-            }
-          ]
-        }
-      ],
-      "properties": {
-        "input": "{{widgets.MedAdherence.inbound.Body}}",
-        "offset": {
-          "x": 670,
-          "y": 90
-        }
-      }
-    },
-    {
-      "name": "MedAdherence_3",
-      "type": "send-message",
-      "transitions": [
-        {
-          "event": "sent"
-        },
-        {
-          "event": "failed"
-        }
-      ],
-      "properties": {
-        "offset": {
-          "x": 410,
-          "y": 2120
-        },
-        "service": "{{trigger.message.InstanceSid}}",
-        "channel": "{{trigger.message.ChannelSid}}",
-        "from": "{{flow.channel.address}}",
-        "to": "{{contact.channel.address}}",
-        "body": "It is important that you let us know if you do not follow your prescribed medication plan. You can reach us any time at (415) 326-1980 to discuss."
-      }
-    },
-    {
-      "name": "MedAdherence_Call",
-      "type": "send-and-wait-for-reply",
-      "transitions": [
-        {
-          "next": "split_MedAdherence_No",
-          "event": "incomingMessage"
-        },
-        {
-          "event": "timeout"
-        },
-        {
-          "event": "deliveryFailure"
-        }
-      ],
-      "properties": {
-        "offset": {
-          "x": 960,
-          "y": 370
-        },
-        "service": "{{trigger.message.InstanceSid}}",
-        "channel": "{{trigger.message.ChannelSid}}",
-        "from": "{{flow.channel.address}}",
-        "body": "Would you like to talk to someone about your medication plan? \n\nPlease reply YES or NO.",
-        "timeout": "360"
-      }
-    },
-    {
-      "name": "split_MedAdherence_No",
-      "type": "split-based-on",
-      "transitions": [
-        {
-          "event": "noMatch"
-        },
-        {
-          "next": "MedAdherence_Call_Yes",
-          "event": "match",
-          "conditions": [
-            {
-              "friendly_name": "YES",
-              "arguments": [
-                "{{widgets.MedAdherence_Call.inbound.Body}}"
-              ],
-              "type": "equal_to",
-              "value": "YES"
-            }
-          ]
-        },
-        {
-          "next": "MedAdherence_Call_No",
-          "event": "match",
-          "conditions": [
-            {
-              "friendly_name": "NO",
-              "arguments": [
-                "{{widgets.MedAdherence_Call.inbound.Body}}"
-              ],
-              "type": "equal_to",
-              "value": "NO"
-            }
-          ]
-        }
-      ],
-      "properties": {
-        "input": "{{widgets.MedAdherence_Call.inbound.Body}}",
-        "offset": {
-          "x": 970,
-          "y": 620
-        }
-      }
-    },
-    {
-      "name": "MedAdherence_Call_Yes",
-      "type": "send-message",
-      "transitions": [
-        {
-          "next": "Goodbye",
-          "event": "sent"
-        },
-        {
-          "event": "failed"
-        }
-      ],
-      "properties": {
-        "offset": {
-          "x": 840,
-          "y": 930
-        },
-        "service": "{{trigger.message.InstanceSid}}",
-        "channel": "{{trigger.message.ChannelSid}}",
-        "from": "{{flow.channel.address}}",
-        "to": "{{contact.channel.address}}",
-        "body": "Ok, no problem. Someone will reach out to you soon at this phone number to discuss."
-      }
-    },
-    {
-      "name": "PainLevel_Call",
-      "type": "send-and-wait-for-reply",
-      "transitions": [
-        {
-          "next": "split_PainLevel_Call",
-          "event": "incomingMessage"
-        },
-        {
-          "event": "timeout"
-        },
-        {
-          "event": "deliveryFailure"
-        }
-      ],
-      "properties": {
-        "offset": {
-          "x": -40,
-          "y": 120
-        },
-        "service": "{{trigger.message.InstanceSid}}",
-        "channel": "{{trigger.message.ChannelSid}}",
-        "from": "{{flow.channel.address}}",
-        "body": "Would you like to speak to someone about how you are feeling? \n\nPlease reply YES or NO.",
-        "timeout": "360"
-      }
-    },
-    {
-      "name": "split_PainLevel_Call",
+      "name": "split_PainLevel_High",
       "type": "split-based-on",
       "transitions": [
         {
@@ -469,7 +257,7 @@
             {
               "friendly_name": "YES",
               "arguments": [
-                "{{widgets.PainLevel_Call.inbound.Body}}"
+                "{{widgets.PainLevel_High.inbound.Body}}"
               ],
               "type": "equal_to",
               "value": "YES"
@@ -477,13 +265,13 @@
           ]
         },
         {
-          "next": "MedAdherence",
+          "next": "FollowUp",
           "event": "match",
           "conditions": [
             {
               "friendly_name": "NO",
               "arguments": [
-                "{{widgets.PainLevel_Call.inbound.Body}}"
+                "{{widgets.PainLevel_High.inbound.Body}}"
               ],
               "type": "equal_to",
               "value": "NO"
@@ -492,15 +280,38 @@
         }
       ],
       "properties": {
-        "input": "{{widgets.PainLevel_Call.inbound.Body}}",
+        "input": "{{widgets.PainLevel_High.inbound.Body}}",
         "offset": {
-          "x": -30,
-          "y": 410
+          "x": 90,
+          "y": 680
         }
       }
     },
     {
-      "name": "PCPAppt_Call_Yes",
+      "name": "FollowUp_Call_Yes",
+      "type": "send-message",
+      "transitions": [
+        {
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 890,
+          "y": 980
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "to": "{{contact.channel.address}}",
+        "body": "Ok, no problem. Someone will reach out to you soon at this number to help. \n\nThank you for letting us check in! We hope you have a speedy recovery.\n\n- Owl Health"
+      }
+    },
+    {
+      "name": "Hello",
       "type": "send-message",
       "transitions": [
         {
@@ -513,22 +324,66 @@
       ],
       "properties": {
         "offset": {
-          "x": -710,
-          "y": 1000
+          "x": -680,
+          "y": -140
         },
         "service": "{{trigger.message.InstanceSid}}",
         "channel": "{{trigger.message.ChannelSid}}",
         "from": "{{flow.channel.address}}",
         "to": "{{contact.channel.address}}",
-        "body": "Ok, no problem. Someone will reach out to you soon at this phone number to discuss."
+        "body": "Hello, {{flow.data.patient_first_name}}. \nThis is Owl Health, checking in to see how you are doing since your recent procedure."
       }
     },
     {
-      "name": "MedAdherence_Call_No",
+      "name": "split_PainLevel",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "event": "noMatch"
+        },
+        {
+          "next": "Pain_Low",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value matches_any_of 0,1,2,3,4,5",
+              "arguments": [
+                "{{widgets.PainLevel.inbound.Body}}"
+              ],
+              "type": "matches_any_of",
+              "value": "0,1,2,3,4,5"
+            }
+          ]
+        },
+        {
+          "next": "PainLevel_High",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value matches_any_of 6,7,8,9,10",
+              "arguments": [
+                "{{widgets.PainLevel.inbound.Body}}"
+              ],
+              "type": "matches_any_of",
+              "value": "6, 7, 8, 9, 10"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{widgets.PainLevel.inbound.Body}}",
+        "offset": {
+          "x": -210,
+          "y": 140
+        }
+      }
+    },
+    {
+      "name": "Pain_Low",
       "type": "send-message",
       "transitions": [
         {
-          "next": "Goodbye",
+          "next": "FollowUp",
           "event": "sent"
         },
         {
@@ -537,14 +392,60 @@
       ],
       "properties": {
         "offset": {
-          "x": 1210,
-          "y": 930
+          "x": -400,
+          "y": 420
         },
         "service": "{{trigger.message.InstanceSid}}",
         "channel": "{{trigger.message.ChannelSid}}",
         "from": "{{flow.channel.address}}",
         "to": "{{contact.channel.address}}",
-        "body": "Ok. Keep in mind, it is important that you follow your prescribed medication plan. Please let us know if you continue to not follow the plan. \n\nYou can reach us any time at 303-999-1234 to discuss."
+        "body": "Please let us know if your pain increases significantly, or if you'd like to speak with someone about how you're feeling. You can reach us at 123-333-4444."
+      }
+    },
+    {
+      "name": "FollowUp_Yes",
+      "type": "send-message",
+      "transitions": [
+        {
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 550,
+          "y": 390
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "to": "{{contact.channel.address}}",
+        "body": "Great! Thanks for letting us know. If you have questions, please don't hesitate to call us at 123-333-4444. \n\nThank you for letting us check in. We hope you have a speedy recovery.\n\n- Owl Health"
+      }
+    },
+    {
+      "name": "FollowUp_Call_No",
+      "type": "send-message",
+      "transitions": [
+        {
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 1300,
+          "y": 950
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "to": "{{contact.channel.address}}",
+        "body": "Ok, no problem. Please give us a call at 123-333-4444 to schedule your follow-up appointment. \n\nThank you for letting us check in! We hope you have a speedy recovery.\n\n- Owl Health"
       }
     }
   ],
