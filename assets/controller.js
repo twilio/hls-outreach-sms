@@ -29,6 +29,29 @@ function readyToUse() {
 
 /*
  * --------------------------------------------------------------------------------------------------------------
+ * assigned Twilio phone to deployed studio flow
+ * --------------------------------------------------------------------------------------------------------------
+ */
+async function assignPhone2Flow(selectedFlowName) {
+  const THIS = checkStudioFlow.name + ' -';
+  console.log(THIS);
+
+  const response = await fetch('/deployment/assign-phone2flow', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({flowName: selectedFlowName, token: accessToken}),
+  });
+  if (!response.ok) {
+    throw Error(response.statusText);
+  }
+  console.log(THIS, await response.text());
+}
+
+/*
+ * --------------------------------------------------------------------------------------------------------------
  * checks if selected flow name is already deployed
  *
  * references:
@@ -60,10 +83,12 @@ async function checkStudioFlow() {
     $('.flow-loader').hide();
     if (sid === 'NOT-DEPLOYED') {
       $('#flow-deploy').show();
+      return false;
     } else {
       $('#flow-deployed').show();
       $('#flow-deploy').hide();
       $('#flow-open').attr('href', `https://www.twilio.com/console/studio/flows/${sid}`);
+      return true;
     }
   } catch (err) {
     console.log(THIS, err);
@@ -103,7 +128,9 @@ async function deployStudioFlow(e) {
     }
     console.log(THIS, await response.text());
 
-    checkStudioFlow();
+    await checkStudioFlow();
+
+    await assignPhone2Flow(selectedFlowName);
 
   } catch (err) {
     console.log(THIS, err);
@@ -134,21 +161,9 @@ async function selectFlow() {
     $('#flow-deploy').hide();
     $('#flow-deployed').hide();
 
-    checkStudioFlow();
+    const deployed = await checkStudioFlow();
 
-    const response = await fetch('/deployment/assign-phone2flow', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({flowName: selectedFlowName, token: accessToken}),
-    });
-    if (!response.ok) {
-      throw Error(response.statusText);
-    }
-    console.log(THIS, await response.text());
-
+    if (deployed) await assignPhone2Flow(selectedFlowName);
 
   } catch (err) {
     console.log(THIS, err);
