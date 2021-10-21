@@ -45,6 +45,7 @@ async function mfa(e) {
 
 async function login(e) {
     e.preventDefault();
+    $('#btn-authenticate').prop('disabled', true);
     const passwordInput = $('#password-input').val();
 
     fetch('/authentication', {
@@ -56,6 +57,7 @@ async function login(e) {
         body: JSON.stringify({password: passwordInput, command: "login"}),
     }).then((response) => {
         if (!response.ok) {
+            $('#btn-authenticate').prop('disabled', false);
             response.json().then(json => {
                 const messageTarget = $('#login-error');
                 messageTarget.text(json.message );
