@@ -28,7 +28,7 @@ targets:
 
 fetch-service-sid:
 	$(eval SERVICE_SID := $(shell curl https://serverless.twilio.com/v1/Services \
-		--silent --user $(TWILIO_ACCOUNT_SID):$(AUTH_TOKEN) \
+		--silent --user $(ACCOUNT_SID):$(AUTH_TOKEN) \
 		| jq --raw-output '.services[] | select(.unique_name | contains("'$(APPLICATION_NAME)'")) | .sid'))
 	@if [[ -z '$(SERVICE_SID)' ]]; then \
 		echo "Service named '$(APPLICATION_NAME)' is not deployed!"; \
@@ -42,7 +42,7 @@ confirm-delete:
 
 
 delete: fetch-service-sid confirm-delete
-	curl -X DELETE https://serverless.twilio.com/v1/Services/$(SERVICE_SID) \
+	@curl -X DELETE https://serverless.twilio.com/v1/Services/$(SERVICE_SID) \
 	--silent --user $(ACCOUNT_SID):$(AUTH_TOKEN) | jq .
 
 	rm -f .twiliodeployinfo
@@ -89,11 +89,12 @@ configure:
 
 
 deploy-serverless:
-	twilio serverless:deploy
+	@echo twilio serverless:deploy
+	@twilio serverless:deploy --username=$(ACCOUNT_SID) --password=$(AUTH_TOKEN)
 
 
 make-editable: fetch-service-sid
-	curl -X POST "https://serverless.twilio.com/v1/Services/$(SERVICE_SID)" \
+	@curl -X POST "https://serverless.twilio.com/v1/Services/$(SERVICE_SID)" \
 	--data-urlencode "UiEditable=True" \
 	--silent --user $(ACCOUNT_SID):$(AUTH_TOKEN) | jq .
 
