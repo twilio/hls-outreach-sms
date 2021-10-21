@@ -165,6 +165,9 @@ async function selectFlow() {
 
     if (deployed) await assignPhone2Flow(selectedFlowName);
 
+    selectedFileName = $('#file-name').html();
+    if (selectedFileName) $('#process-file').prop('disabled', false);
+
   } catch (err) {
     console.log(THIS, err);
   }
@@ -223,8 +226,8 @@ function updateFileInfo() {
 
   console.log("selected file count: " + fileList.length);
   file = fileList[0];
-  document.getElementById("file-name").innerHTML = file.name;
-  document.getElementById("file-size").innerHTML = '(' + file.size + ' bytes)';
+  $('#file-name').html(file.name);
+  $('#file-size').html("(" + file.size + " bytes)");
 
   $('#process-file').prop('disabled', false);
   $('#progress-upload').hide();
