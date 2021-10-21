@@ -1,13 +1,12 @@
-# SMS Outreach Solution Blueprint: Technical Guide
+# Patient Outreach Application: Technical Guide
 
 *This document is intended to serve as a technical guide for customers
-who are interested in the installing & using the SMS Outreach Solution Blueprint.*
+who are interested in the installing & using the Patient Outreach application.*
 
 *Installation of this application is supported using the latest versions of Chrome and Firefox.
-Installation via Internet Explorer has not been officially tested and although issues are not expected
-, unforeseen problems may occur.*
+Installation via Internet Explorer has not been officially tested and although issues are not expected, unforeseen problems may occur.*
 
-- [Instalation Information](#install)
+- [Installation Information](#install)
 - [Application Overview](#application)
 - [Architecture & Components](#architecture)
 
