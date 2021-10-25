@@ -40,8 +40,8 @@
       ],
       "properties": {
         "offset": {
-          "x": 490,
-          "y": -110
+          "x": -20,
+          "y": 1800
         },
         "service": "{{trigger.message.InstanceSid}}",
         "channel": "{{trigger.message.ChannelSid}}",
@@ -89,8 +89,8 @@
       "properties": {
         "input": "{{widgets.FollowUp.inbound.Body}}",
         "offset": {
-          "x": 500,
-          "y": 130
+          "x": -10,
+          "y": 2090
         }
       }
     },
@@ -111,8 +111,8 @@
       ],
       "properties": {
         "offset": {
-          "x": 940,
-          "y": 370
+          "x": 340,
+          "y": 2500
         },
         "service": "{{trigger.message.InstanceSid}}",
         "channel": "{{trigger.message.ChannelSid}}",
@@ -138,14 +138,14 @@
       ],
       "properties": {
         "offset": {
-          "x": -220,
-          "y": -130
+          "x": 80,
+          "y": 160
         },
         "service": "{{trigger.message.InstanceSid}}",
         "channel": "{{trigger.message.ChannelSid}}",
         "from": "{{flow.channel.address}}",
         "body": "Consider a scale from 0-10, where 0 is \"no pain\" and 10 is \"the worst pain possible\". \n\nHow would you rate your current pain level? \n(please respond with only a single number)",
-        "timeout": "20"
+        "timeout": "360"
       }
     },
     {
@@ -187,8 +187,8 @@
       "properties": {
         "input": "{{widgets.FollowUp_Call.inbound.Body}}",
         "offset": {
-          "x": 910,
-          "y": 670
+          "x": 350,
+          "y": 2750
         }
       }
     },
@@ -206,8 +206,8 @@
       ],
       "properties": {
         "offset": {
-          "x": -140,
-          "y": 950
+          "x": 160,
+          "y": 1290
         },
         "service": "{{trigger.message.InstanceSid}}",
         "channel": "{{trigger.message.ChannelSid}}",
@@ -233,8 +233,8 @@
       ],
       "properties": {
         "offset": {
-          "x": 140,
-          "y": 400
+          "x": 540,
+          "y": 830
         },
         "service": "{{trigger.message.InstanceSid}}",
         "channel": "{{trigger.message.ChannelSid}}",
@@ -282,8 +282,8 @@
       "properties": {
         "input": "{{widgets.PainLevel_High.inbound.Body}}",
         "offset": {
-          "x": 90,
-          "y": 680
+          "x": 550,
+          "y": 1070
         }
       }
     },
@@ -300,8 +300,8 @@
       ],
       "properties": {
         "offset": {
-          "x": 890,
-          "y": 980
+          "x": 210,
+          "y": 3140
         },
         "service": "{{trigger.message.InstanceSid}}",
         "channel": "{{trigger.message.ChannelSid}}",
@@ -324,8 +324,8 @@
       ],
       "properties": {
         "offset": {
-          "x": -680,
-          "y": -140
+          "x": 70,
+          "y": -90
         },
         "service": "{{trigger.message.InstanceSid}}",
         "channel": "{{trigger.message.ChannelSid}}",
@@ -373,8 +373,8 @@
       "properties": {
         "input": "{{widgets.PainLevel.inbound.Body}}",
         "offset": {
-          "x": -210,
-          "y": 140
+          "x": 80,
+          "y": 490
         }
       }
     },
@@ -392,8 +392,8 @@
       ],
       "properties": {
         "offset": {
-          "x": -400,
-          "y": 420
+          "x": 80,
+          "y": 830
         },
         "service": "{{trigger.message.InstanceSid}}",
         "channel": "{{trigger.message.ChannelSid}}",
@@ -415,8 +415,8 @@
       ],
       "properties": {
         "offset": {
-          "x": 550,
-          "y": 390
+          "x": -190,
+          "y": 2500
         },
         "service": "{{trigger.message.InstanceSid}}",
         "channel": "{{trigger.message.ChannelSid}}",
@@ -438,8 +438,8 @@
       ],
       "properties": {
         "offset": {
-          "x": 1300,
-          "y": 950
+          "x": 610,
+          "y": 3140
         },
         "service": "{{trigger.message.InstanceSid}}",
         "channel": "{{trigger.message.ChannelSid}}",

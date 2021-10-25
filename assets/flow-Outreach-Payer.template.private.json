@@ -37,8 +37,8 @@
       ],
       "properties": {
         "offset": {
-          "x": -240,
-          "y": -150
+          "x": 110,
+          "y": -130
         },
         "service": "{{trigger.message.InstanceSid}}",
         "channel": "{{trigger.message.ChannelSid}}",
@@ -61,14 +61,14 @@
       ],
       "properties": {
         "offset": {
-          "x": 140,
-          "y": -150
+          "x": 110,
+          "y": 110
         },
         "service": "{{trigger.message.InstanceSid}}",
         "channel": "{{trigger.message.ChannelSid}}",
         "from": "{{flow.channel.address}}",
         "to": "{{contact.channel.address}}",
-        "body": "Have questions regarding your Medicare coverage? \n\nWe offer a live chat that can help you get answers. Head over to our website to chat now, or to access other useful resources like a comparison tool for finding Medicare providers in your area, ways to get help with drug costs, recipes to help with healthy eatiing habits, and more."
+        "body": "Have questions regarding your Medicare coverage? \n\nWe offer a live chat that can help you get answers. Head over to our website to chat now, or to access other useful resources like a comparison tool for finding Medicare providers in your area, ways to get help with drug costs, recipes to help with healthy eating habits, and more."
       }
     },
     {
@@ -84,8 +84,8 @@
       ],
       "properties": {
         "offset": {
-          "x": 520,
-          "y": -150
+          "x": 120,
+          "y": 380
         },
         "service": "{{trigger.message.InstanceSid}}",
         "channel": "{{trigger.message.ChannelSid}}",
