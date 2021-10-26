@@ -69,6 +69,7 @@ The Twilio CLI and Serverless Toolkit will allow you to deploy the Twilio Functi
   GitHub CLI will be used during installation to pull the project from GitHub to download the solution blueprint code.
   - Install [GitHub CLI](https://github.com/cli/cli/blob/trunk/README.md)
 
+  
 ###Installation Steps
 ***
 <em>(Installation of this application is supported on the latest versions of Chrome, Firefox, and Safari.
