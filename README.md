@@ -20,7 +20,7 @@ This section details the requirements for a successful deployment and installati
 ***
 The following prerequisites must be satisfied prior to installing the application.
 
-####Twilio account
+**Twilio account**
 
   - Create a Twilio account by signing up [here](https://www.twilio.com/try-twilio)
   - Once the Twilio account is created,
@@ -28,7 +28,7 @@ The following prerequisites must be satisfied prior to installing the applicatio
     from the [Twilio console](https://console.twilio.com/) for use below
   - If you have multiple Twilio Projects under your account, make sure that you are logged into the Project that you want the application to be deployed to
 
-####Twilio phone number
+**Twilio phone number**
 
 - After provisioning your Twilio account,
   you will need to [purchase a phone number](https://www.twilio.com/console/phone-numbers/incoming)
@@ -42,7 +42,7 @@ The following prerequisites must be satisfied prior to installing the applicatio
   (multi-factor authentication leverages Twilio Verify).
   See Twilio SMS pricing and Twilio Verify pricing for more information.</em>
   
-####Ensure unique application name
+**Ensure unique application name**
 
 In order to deploy correctly, it is important
 that you do not have an existing Twilio Functions Service called ‘hls-outreach-sms.’
@@ -51,20 +51,20 @@ the existing functions service to ensure a conflict doesn’t occur during insta
 You can delete the existing Functions service via executing `make delete`
 in the application directory `hls-outreach-sms` using a terminal or a command prompt.
 
-####Install Twilio CLI
+**Install Twilio CLI**
 
 The Twilio CLI and Serverless Toolkit will allow you to deploy the Twilio Functions/service needed for the application. The Twilio CLI allows you to manage your Twilio resources from your terminal or command prompt. The Serverless Toolkit is CLI tooling to help you develop locally and deploy to Twilio Runtime.
 
 - Install [Twilio CLI](https://www.twilio.com/docs/twilio-cli/quickstart)
 - Install [Twilio Serverless Toolkit](https://www.twilio.com/docs/labs/serverless-toolkit/getting-started#install-the-twilio-serverless-toolkit)
 
-####Install Make Command
+**Install Make Command**
 
   Check if you have ‘make’ installed by executing `make --version` and examining the output.
   If ‘make’ is not installed, please install it.
   On Mac computers, you can execute `xcode-select --install` to install.
 
-####Install GitHub CLI
+**Install GitHub CLI**
 
   GitHub CLI will be used during installation to pull the project from GitHub to download the solution blueprint code.
   - Install [GitHub CLI](https://github.com/cli/cli/blob/trunk/README.md)
