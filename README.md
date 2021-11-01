@@ -118,7 +118,7 @@ export AUTH_TOKEN=your-twilio-auth-token
 ***
 
 The 'hls-outreach-sms' app packages together the core components of a deployable prototype for SMS-based outreach.
-This app aims to support healthcare providers, payers, and life sciences organizations
+This app aims to support healthcare providers, payors, and life sciences organizations
 who are interested in building their own outreach solution to understand what is possible using Twilio,
 and to accelerate the path to success by providing core building blocks and necessary workflows.
 Because the concept of an outreach solution is inherently flexible and can be useful for a variety of communication needs,
