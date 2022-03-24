@@ -46,14 +46,14 @@ exports.handler = async function (context, event, callback) {
     const CUSTOMER_NAME      = await getParam(context, 'CUSTOMER_NAME');
     const APPLICATION_NAME   = await getParam(context, 'APPLICATION_NAME');
     const PHONE_NUMBER       = await getParam(context, 'TWILIO_PHONE_NUMBER');
-    const SERVICE_SID        = await getParam(context, 'TWILIO_SERVICE_SID');
-    const ENVIRONMENT_SID    = await getParam(context, 'TWILIO_ENVIRONMENT_SID');
-    const ENVIRONMENT_DOMAIN = await getParam(context, 'TWILIO_ENVIRONMENT_DOMAIN');
+    const SERVICE_SID        = await getParam(context, 'SERVICE_SID');
+    const ENVIRONMENT_SID    = await getParam(context, 'ENVIRONMENT_SID');
+    const ENVIRONMENT_DOMAIN = await getParam(context, 'ENVIRONMENT_DOMAIN');
 
     // ---------- load & configure studio flow definition
     console.log(THIS, 'Replacing YOUR_HEALTH_SYSTEM_NAME        ->', CUSTOMER_NAME);
-    console.log(THIS, 'Replacing YOUR_TWILIO_SERVICE_SID        ->', SERVICE_SID);
-    console.log(THIS, 'Replacing YOUR_TWILIO_ENVIRONMENT_SID    ->', ENVIRONMENT_SID);
+    console.log(THIS, 'Replacing YOUR_SERVICE_SID        ->', SERVICE_SID);
+    console.log(THIS, 'Replacing YOUR_ENVIRONMENT_SID    ->', ENVIRONMENT_SID);
     console.log(THIS, 'Replacing YOUR_TWILIO_ENVIRONMENT_DOMAIN ->', ENVIRONMENT_DOMAIN);
 
     const assetName = `/flow-${event.flowName}.template.json`;
@@ -62,8 +62,8 @@ exports.handler = async function (context, event, callback) {
       .readFileSync(flow_definition_file)
       .toString('utf-8')
       .replace('YOUR_HEALTH_SYSTEM_NAME', CUSTOMER_NAME)
-      .replace(/YOUR_TWILIO_SERVICE_SID/g, SERVICE_SID)
-      .replace(/YOUR_TWILIO_ENVIRONMENT_SID/g, ENVIRONMENT_SID)
+      .replace(/YOUR_SERVICE_SID/g, SERVICE_SID)
+      .replace(/YOUR_ENVIRONMENT_SID/g, ENVIRONMENT_SID)
       .replace(/YOUR_TWILIO_ENVIRONMENT_DOMAIN/g, ENVIRONMENT_DOMAIN);
 
     const client = context.getTwilioClient();

@@ -137,11 +137,11 @@ async function sendMfaCode(context) {
     const { path } = Runtime.getFunctions()["authentication-helper"];
     const { getVerifyServiceId } = require(path);
 
-    context.TWILIO_VERIFY_SID = await getVerifyServiceId(context);
+    context.VERIFY_SID = await getVerifyServiceId(context);
     const twilioClient = context.getTwilioClient();
     const channel = 'sms';
     return twilioClient.verify
-        .services(context.TWILIO_VERIFY_SID)
+        .services(context.VERIFY_SID)
         .verifications
         .create({
             to: context.ADMINISTRATOR_PHONE,
@@ -155,11 +155,11 @@ async function verifyMfaCode(code, context) {
     const { path } = Runtime.getFunctions()["authentication-helper"];
     const { getVerifyServiceId } = require(path);
 
-    context.TWILIO_VERIFY_SID = await getVerifyServiceId(context);
+    context.VERIFY_SID = await getVerifyServiceId(context);
 
     const twilioClient = context.getTwilioClient();
     return twilioClient.verify
-        .services(context.TWILIO_VERIFY_SID)
+        .services(context.VERIFY_SID)
         .verificationChecks.create({
             to: context.ADMINISTRATOR_PHONE,
             code,

@@ -35,7 +35,7 @@ exports.handler = async function (context, event, callback) {
   }
 
   try {
-    const SERVICE_SID = await getParam(context, 'TWILIO_SERVICE_SID');
+    const SERVICE_SID = await getParam(context, 'SERVICE_SID');
     assert(SERVICE_SID, 'Service not yet deployed!!!');
 
     const client = context.getTwilioClient();

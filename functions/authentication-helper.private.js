@@ -75,27 +75,20 @@ function checkDisableAuthForLocalhost(context) {
     );
 }
 
-/* -----------------------------------------------------------------------
+/* ----------------------------------------------------------------------------------------------------
  * This function returns Verify Service SID that matches VERIFY_SERVICE_NAME.
  * If does not exists it creates a new service.
-
+ *
  * VERIFY_SERVICE_NAME is included in the text message to identify the sender.
  * It is recommended that the customer use their name as VERIFY_SERVICE_NAME
+ * ----------------------------------------------------------------------------------------------------
  */
 async function getVerifyServiceId(context) {
-    const client = context.getTwilioClient();
-    if (!context.VERIFY_SERVICE_NAME) {
-        context.VERIFY_SERVICE_NAME = context.CUSTOMER_NAME;
-        console.log("using CUSTOMER_NAME for VERIFY_SERVICE_NAME");
-    }
-    const services = await client.verify.services.list();
-    const service = services.find(s => s.friendlyName === context.VERIFY_SERVICE_NAME);
-    if (service) return service.sid;
+  const { getParam } = require(Runtime.getFunctions()['helpers'].path);
 
-    console.log(`create verfiy service named: ${context.VERIFY_SERVICE_NAME}`);
-    const si = await client.verify.services.create({friendlyName: context.VERIFY_SERVICE_NAME});
-    if (si) return si.sid;
+  return await getParam(context, 'VERIFY_SID');
 }
+
 // -----------------------------------------------------
 
 function isValidMfaToken(token, context) {

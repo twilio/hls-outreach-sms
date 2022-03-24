@@ -20,7 +20,7 @@ This section details the requirements for a successful deployment and installati
 ***
 The following prerequisites must be satisfied prior to installing the application.
 
-**Twilio account**
+#### Twilio account
 
   - Create a Twilio account by signing up [here](https://www.twilio.com/try-twilio)
   - Once the Twilio account is created,
@@ -28,7 +28,7 @@ The following prerequisites must be satisfied prior to installing the applicatio
     from the [Twilio console](https://console.twilio.com/) for use below
   - If you have multiple Twilio Projects under your account, make sure that you are logged into the Project that you want the application to be deployed to
 
-**Twilio phone number**
+#### Twilio phone number
 
 - After provisioning your Twilio account,
   you will need to [purchase a phone number](https://www.twilio.com/console/phone-numbers/incoming)
@@ -42,7 +42,7 @@ The following prerequisites must be satisfied prior to installing the applicatio
   (multi-factor authentication leverages Twilio Verify).
   See Twilio SMS pricing and Twilio Verify pricing for more information.</em>
   
-**Ensure unique application name**
+#### Ensure unique application name
 
 In order to deploy correctly, it is important
 that you do not have an existing Twilio Functions Service called ‘hls-outreach-sms.’
@@ -51,24 +51,25 @@ the existing functions service to ensure a conflict doesn’t occur during insta
 You can delete the existing Functions service via executing `make delete`
 in the application directory `hls-outreach-sms` using a terminal or a command prompt.
 
-**Install Twilio CLI**
 
-The Twilio CLI and Serverless Toolkit will allow you to deploy the Twilio Functions/service needed for the application. The Twilio CLI allows you to manage your Twilio resources from your terminal or command prompt. The Serverless Toolkit is CLI tooling to help you develop locally and deploy to Twilio Runtime.
+#### Docker Desktop
 
-- Install [Twilio CLI](https://www.twilio.com/docs/twilio-cli/quickstart)
-- Install [Twilio Serverless Toolkit](https://www.twilio.com/docs/labs/serverless-toolkit/getting-started#install-the-twilio-serverless-toolkit)
+Install Docker desktop that includes docker compose CLI will be used to run the application installer locally on your machine.
+Goto [Docker Desktop](https://www.docker.com/products/docker-desktop) and install with default options.
+After installation make sure to start Docker desktop.
 
-**Install Make Command**
+#### jq & xq
 
-  Check if you have ‘make’ installed by executing `make --version` and examining the output.
-  If ‘make’ is not installed, please install it.
-  On Mac computers, you can execute `xcode-select --install` to install.
-
-**Install GitHub CLI**
-
-  GitHub CLI will be used during installation to pull the project from GitHub to download the solution blueprint code.
-  - Install [GitHub CLI](https://github.com/cli/cli/blob/trunk/README.md)
-
+```shell
+$ brew install jq           # install jq
+...
+$ jq --version              # confirm installation
+jq-1.6
+$ brew install python-yq    # install yq/xq
+...
+$ yq --version              # confirm installation
+yq 2.13.0
+```
   
 ###Installation Steps
 ***
@@ -76,42 +77,44 @@ The Twilio CLI and Serverless Toolkit will allow you to deploy the Twilio Functi
 Installation via Internet Explorer has not been officially tested
 and although issues are not expected, unforeseen problems may occur)</em>
 
-We provide ‘Makefile’ to simplify the deployment/management of the application.
-Your Twilio account credentials (ACCOUNT_SID & AUTH_TOKEN) are required to properly access Twilio resources on your behalf.
+Please ensure that you do not have any running processes
+that is listening on port `3000`
+such as development servers or another HLS installer still running.
 
-While the credentials can be re-entered every time you execute the Makefile,
-you can also avoid re-entering the credentials by saving them as environment variables
-by executing the following with your Twilio credentials:
+#### Build Installer Docker Image
+
 ```shell
-export ACCOUNT_SID=your-twilio-account-sid
-export AUTH_TOKEN=your-twilio-auth-token
+docker build --tag hls-outreach-installer --no-cache https://github.com/bochoi-twlo/hls-outreach-sms.git#main
 ```
 
-**Ensure completed prerequisites** - ensure that you have completed all prerequisite steps listed above
+If running on Apple Silicon (M1 chip), add `--platform linux/amd64` option.
 
-1. Clone the GitHub project - cd to the directory where you will like to download the application. Clone the application from Twilio GitHub by running the following command:
-    ```shell
-    git clone https://github.com/twilio/hls-outreach-sms.git
-    ```
+#### Run Installer Docker Container
 
-2. Change directory to the application directory by `cd hls-outreach-sms`
+Replace `${TWILIO_ACCOUNT_SID}` and `${TWILIO_AUTH_TOKEN}` with that of your target Twilio account.
 
-3. Configure the application by executing `make configure`.
-   You’ll be asked to enter the following configuration parameters.
-   Alternatively, you can directly edit the `.env` file found in the application directory.
-   - CUSTOMER_NAME used as the ‘sender’ name in SMS texts
-   - TWILIO_PHONE_NUMBER used as the SMS sender phone number. This would be the Twilio phone number you purchased above
-   - APPLICATION_PASSWORD to protect application from unauthorized access
-   - ADMINISTRATOR_PHONE to receive MFA verification to access application
+```shell
+docker run --name hls-outreach-installer --rm --publish 3000:3000  \
+--env ACCOUNT_SID=${TWILIO_ACCOUNT_SID} --env AUTH_TOKEN=${TWILIO_AUTH_TOKEN} \
+--interactive --tty hls-website-installer
+```
 
-4. Deploy application via Serverless - to deploy the application, run `make deploy`.
-   After successful deployment, you should now see the ‘hls-outreach-sms’ functions service in your Twilio Console under Functions.
+If running on Apple Silicon (M1 chip), add `--platform linux/amd64` option.
 
-5. Navigate to the application page -  in order to complete app setup, navigate to the application’s page.
-   You can find your app page URL in the list of Assets created during application deployment in Terminal
-   (look for the URL that ends in `index.html`)
+#### Open installer in browser
 
-6. Access the application - please reference the [Customer Implementation Guide](https://twilio-cms-prod.s3.amazonaws.com/documents/Patient_Outreach_App_Implementation_Guide.pdf) for detailed steps.
+Open http://localhost:3000/installer/index.html
+
+#### Terminate installer
+
+To terminate installer:
+- Enter Control-C in the terminal where `docker run ...` was executed
+- Stop the `hls-outreach-installer` docker container via the Docker Desktop
+
+#### Access the application
+
+Please reference the [Customer Implementation Guide](https://twilio-cms-prod.s3.amazonaws.com/documents/Patient_Outreach_App_Implementation_Guide.pdf) for detailed steps.
+
 
 ## <a name="application"></a>Application Overview
 ***

@@ -1,0 +1,310 @@
+{
+  "states": [
+    {
+      "transitions": [
+        {
+          "event": "incomingMessage",
+          "next": "loop_1"
+        },
+        {
+          "event": "incomingCall"
+        },
+        {
+          "event": "incomingRequest"
+        },
+        {
+          "event": "incomingParent"
+        }
+      ],
+      "type": "trigger",
+      "name": "Trigger",
+      "properties": {
+        "offset": {
+          "y": -10,
+          "x": -1310
+        }
+      }
+    },
+    {
+      "transitions": [
+        {
+          "event": "callComplete"
+        },
+        {
+          "event": "failedToEnqueue"
+        },
+        {
+          "event": "callFailure"
+        }
+      ],
+      "type": "send-to-flex",
+      "name": "send_to_flex_agent",
+      "properties": {
+        "attributes": "{\"name\": \"{{trigger.message.ChannelAttributes.from}}\", \"channelType\": \"{{trigger.message.ChannelAttributes.channel_type}}\", \"channelSid\": \"{{trigger.message.ChannelSid}}\"}",
+        "workflow": "YOUR_FLEX_WORKFLOW_SID",
+        "channel": "YOUR_FLEX_TASK_CHANNEL_SID",
+        "offset": {
+          "y": 2660,
+          "x": -1030
+        }
+      }
+    },
+    {
+      "transitions": [
+        {
+          "event": "incomingMessage",
+          "next": "enter_lastname"
+        },
+        {
+          "event": "timeout",
+          "next": "send_to_flex_agent"
+        },
+        {
+          "event": "deliveryFailure",
+          "next": "send_to_flex_agent"
+        }
+      ],
+      "type": "send-and-wait-for-reply",
+      "name": "enter_firstname",
+      "properties": {
+        "body": "Please enter your first name",
+        "from": "Owl Health",
+        "service": "{{trigger.message.InstanceSid}}",
+        "timeout": "1800",
+        "offset": {
+          "y": 530,
+          "x": -1300
+        },
+        "channel": "{{trigger.message.ChannelSid}}"
+      }
+    },
+    {
+      "transitions": [
+        {
+          "event": "incomingMessage",
+          "next": "enter_dob"
+        },
+        {
+          "event": "timeout",
+          "next": "send_to_flex_agent"
+        },
+        {
+          "event": "deliveryFailure",
+          "next": "send_to_flex_agent"
+        }
+      ],
+      "type": "send-and-wait-for-reply",
+      "name": "enter_lastname",
+      "properties": {
+        "body": "Please enter your last name",
+        "from": "Owl Health",
+        "service": "{{trigger.message.InstanceSid}}",
+        "timeout": "1800",
+        "offset": {
+          "y": 790,
+          "x": -1590
+        },
+        "channel": "{{trigger.message.ChannelSid}}"
+      }
+    },
+    {
+      "transitions": [
+        {
+          "event": "success",
+          "next": "send_service_options"
+        },
+        {
+          "event": "fail",
+          "next": "send_to_flex_agent"
+        }
+      ],
+      "type": "run-function",
+      "name": "selectable_service_options",
+      "properties": {
+        "parameters": [
+          {
+            "key": "serviceSID",
+            "value": "{{trigger.message.InstanceSid}}"
+          },
+          {
+            "key": "chatChannelSID",
+            "value": "{{trigger.message.ChannelSid}}"
+          },
+          {
+            "key": "selectableChatMessagesObject",
+            "value": "{\"clickableMessages\": [ {\"key\":\"hours\", \"message\":\"Hours\"}, {\"key\":\"parking\", \"message\":\"Parking\"}, {\"key\":\"scheduling\", \"message\":\"Scheduling\"}, {\"key\":\"consultation\", \"message\":\"Consultation\"}, {\"key\":\"other\", \"message\":\"Other\"}]}"
+          }
+        ],
+        "url": "https://YOUR_ENVIRONMENT_DOMAIN/selectable-chat-messages",
+        "environment_sid": "YOUR_ENVIRONMENT_SID",
+        "offset": {
+          "y": 1370,
+          "x": -2180
+        },
+        "function_sid": "YOUR_FUNCTION_SID",
+        "service_sid": "YOUR_SERVICE_SID"
+      }
+    },
+    {
+      "transitions": [
+        {
+          "event": "incomingMessage",
+          "next": "choose_service_options"
+        },
+        {
+          "event": "timeout",
+          "next": "send_to_flex_agent"
+        },
+        {
+          "event": "deliveryFailure",
+          "next": "send_to_flex_agent"
+        }
+      ],
+      "type": "send-and-wait-for-reply",
+      "name": "send_service_options",
+      "properties": {
+        "body": "How can we help you today? Please select from the following options.",
+        "from": "Owl Health",
+        "service": "{{trigger.message.InstanceSid}}",
+        "timeout": "1800",
+        "offset": {
+          "y": 1650,
+          "x": -2480
+        },
+        "channel": "{{trigger.message.ChannelSid}}"
+      }
+    },
+    {
+      "transitions": [
+        {
+          "event": "noMatch",
+          "next": "send_to_flex_agent"
+        },
+        {
+          "conditions": [
+            {
+              "type": "equal_to",
+              "friendly_name": "YES",
+              "arguments": [
+                "{{widgets.send_service_options.inbound.Body}}"
+              ],
+              "value": "yes"
+            }
+          ],
+          "event": "match",
+          "next": "send_to_flex_agent"
+        },
+        {
+          "conditions": [
+            {
+              "type": "equal_to",
+              "friendly_name": "NO",
+              "arguments": [
+                "{{widgets.send_service_options.inbound.Body}}"
+              ],
+              "value": "no"
+            }
+          ],
+          "event": "match",
+          "next": "loop_checker"
+        }
+      ],
+      "type": "split-based-on",
+      "name": "choose_service_options",
+      "properties": {
+        "input": "{{widgets.send_service_options.inbound.Body}}",
+        "offset": {
+          "y": 2260,
+          "x": -2470
+        }
+      }
+    },
+    {
+      "transitions": [
+        {
+          "event": "incomingMessage",
+          "next": "selectable_service_options"
+        },
+        {
+          "event": "timeout",
+          "next": "send_to_flex_agent"
+        },
+        {
+          "event": "deliveryFailure",
+          "next": "send_to_flex_agent"
+        }
+      ],
+      "type": "send-and-wait-for-reply",
+      "name": "enter_dob",
+      "properties": {
+        "body": "Please enter your date of birth (YYYY-mm-dd)",
+        "from": "Owl Health",
+        "service": "{{trigger.message.InstanceSid}}",
+        "timeout": "1800",
+        "offset": {
+          "y": 1060,
+          "x": -1890
+        },
+        "channel": "{{trigger.message.ChannelSid}}"
+      }
+    },
+    {
+      "transitions": [
+        {
+          "event": "noMatch",
+          "next": "loop_1"
+        },
+        {
+          "conditions": [
+            {
+              "type": "equal_to",
+              "friendly_name": "looped 3 times",
+              "arguments": [
+                "{{flow.variables.count}}"
+              ],
+              "value": "2"
+            }
+          ],
+          "event": "match",
+          "next": "send_to_flex_agent"
+        }
+      ],
+      "type": "split-based-on",
+      "name": "loop_checker",
+      "properties": {
+        "input": "{{flow.variables.count}}",
+        "offset": {
+          "y": 1430,
+          "x": -480
+        }
+      }
+    },
+    {
+      "transitions": [
+        {
+          "event": "next",
+          "next": "enter_firstname"
+        }
+      ],
+      "type": "set-variables",
+      "name": "loop_1",
+      "properties": {
+        "variables": [
+          {
+            "key": "count",
+            "value": "{%- if flow.variables.count -%}\n  {{flow.variables.count | plus: 1}}\n{%- else -%}\n  0\n{%- endif -%}"
+          }
+        ],
+        "offset": {
+          "y": 250,
+          "x": -1310
+        }
+      }
+    }
+  ],
+  "initial_state": "Trigger",
+  "flags": {
+    "allow_concurrent_calls": true
+  },
+  "description": "Bot flow for creating a Flex webchat task"
+}
