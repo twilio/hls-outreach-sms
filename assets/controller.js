@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-
 /*
  * --------------------------------------------------------------------------------------------------------------
  * main controller javascript used by index.html
@@ -7,7 +5,20 @@
  * Note that initialize() MUST be executed at the end of index.html
  * --------------------------------------------------------------------------------------------------------------
  */
-
+const UI = {
+  flow_selector: '#flow-selector',
+  flow_open: '#flow-open',
+  process_file: '#process-file',
+  progress_upload: '#progress-upload',
+  file_name: '#file-name',
+  file_size: '#file-size',
+  download_response: '#download-reponse',
+  progress_download: '#progress-download',
+  process_flow_file: '#process-flow-file',
+  progress_flow_upload: '#progress-flow-upload',
+  flow_file_name: '#flow-file-name',
+  flow_file_size: '#flow-file-size',
+}
 
 
 let phoneNumber;
@@ -18,82 +29,6 @@ delete baseUrl.search;
 const fullUrl = baseUrl.href.substr(0, baseUrl.href.length - 1);
 
 const timer = (ms) => new Promise((res) => setTimeout(res, ms));
-
-// --------------------------------------------------------------------------------
-function readyToUse() {
-  THIS = readyToUse.name + ' -';
-  console.log(THIS);
-
-  $('#ready-to-use').show();
-}
-
-/*
- * --------------------------------------------------------------------------------------------------------------
- * assigned Twilio phone to deployed studio flow
- * --------------------------------------------------------------------------------------------------------------
- */
-async function assignPhone2Flow(selectedFlowName) {
-  const THIS = checkStudioFlow.name + ' -';
-  console.log(THIS);
-
-  const response = await fetch('/deployment/assign-phone2flow', {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({flowName: selectedFlowName, token: accessToken}),
-  });
-  if (!response.ok) {
-    throw Error(response.statusText);
-  }
-  console.log(THIS, await response.text());
-}
-
-/*
- * --------------------------------------------------------------------------------------------------------------
- * checks if selected flow name is already deployed
- *
- * references:
- *    #flow-selector
- * --------------------------------------------------------------------------------------------------------------
- */
-async function checkStudioFlow() {
-  const THIS = checkStudioFlow.name + ' -';
-  console.log(THIS);
-
-  const selectedFlowName = $('#flow-selector').val();
-  console.log(THIS, 'selected flow: ', selectedFlowName);
-
-  try {
-    const response = await fetch('/deployment/check-studio-flow', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({flowName: selectedFlowName, token: accessToken}),
-    });
-    if (!response.ok) {
-      throw Error(response.statusText);
-    }
-    const sid = await response.text();
-    console.log(THIS, 'server returned:', sid);
-    $('#flow-deploy .button').removeClass('loading');
-    $('.flow-loader').hide();
-    if (sid === 'NOT-DEPLOYED') {
-      $('#flow-deploy').show();
-      return false;
-    } else {
-      $('#flow-deployed').show();
-      $('#flow-deploy').hide();
-      $('#flow-open').attr('href', `https://www.twilio.com/console/studio/flows/${sid}`);
-      return true;
-    }
-  } catch (err) {
-    console.log(THIS, err);
-  }
-}
 
 /*
  * --------------------------------------------------------------------------------------------------------------
@@ -134,7 +69,7 @@ async function deployStudioFlow(e) {
 
   } catch (err) {
     console.log(THIS, err);
-    $('#flow-deploy .button').removeClass('loading');
+    $(`#flow-deploy .button`).removeClass('loading');
     $('.flow-loader.button-loader').hide();
   }
 }
@@ -151,22 +86,32 @@ async function deployStudioFlow(e) {
  * --------------------------------------------------------------------------------------------------------------
  */
 async function selectFlow() {
-  const THIS = selectFlow.name + ' -';
-  console.log(THIS);
+  const THIS = 'selectFlow:';
+
   try {
-    const selectedFlowName = $('#flow-selector').val();
+    const flowFName = $(UI.flow_selector).text();
+    const flowSid = $(UI.flow_selector).val();
+    console.log(THIS, flowFName, flowSid)
 
     // reset section
     $('.flow-loader').hide();
-    $('#flow-deploy').hide();
-    $('#flow-deployed').hide();
 
-    const deployed = await checkStudioFlow();
+    const response = await fetch('assign-phone2flow', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({flowSid: flowSid, token: accessToken}),
+    });
+    if (!response.ok) {
+      throw Error(response.statusText);
+    }
+    console.log(THIS, await response.text());
+    $(UI.flow_open).attr('href', `https://www.twilio.com/console/studio/flows/${flowSid}`);
 
-    if (deployed) await assignPhone2Flow(selectedFlowName);
-
-    selectedFileName = $('#file-name').html();
-    if (selectedFileName) $('#process-file').prop('disabled', false);
+    selectedFileName = $(UI.file_name).html();
+    if (selectedFileName) $(UI.process_file).prop('disabled', false);
 
   } catch (err) {
     console.log(THIS, err);
@@ -183,13 +128,12 @@ async function selectFlow() {
  *    selectFlow()
  * --------------------------------------------------------------------------------------------------------------
  */
-async function fillFlowSelector() {
-  const THIS = fillFlowSelector.name + ' -';
-  console.log(THIS);
+async function populateFlowSelector() {
+  const THIS = 'populateFlowSelector:';
 
-  let firstFlowName = null;
+  let firstFlow = null;
   try {
-    const response = await fetch('/deployment/list-studio-flow-templates', {
+    const response = await fetch('/list-flows', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -198,17 +142,22 @@ async function fillFlowSelector() {
       body: JSON.stringify({token:accessToken})
     });
     const flows = await response.json();
+    console.log(THIS, `retrieved ${flows.length} flows`);
+    $(UI.flow_selector).clear;
+    let selected = 'selected';
     for (f of flows) {
-      console.log(THIS, 'found flow template:', f);
-      $('#flow-selector').append(`<option value="${f}">${f}</option>`);
-      if (!firstFlowName) firstFlowName = f;
+      $(UI.flow_selector).append(`<option value="${f.flow_sid}" ${selected}>${f.friendlyName}</option>`);
+      if (!firstFlow) {
+        firstFlow = f;
+        selected = '';
+      }
     }
   } catch (err) {
-    console.log(THIS, 'Error fetching flow names!!!');
+    console.log(THIS, 'Error fetching flow!!!');
   }
 
-  console.log(THIS, 'firstFlowName:', firstFlowName);
-  if (firstFlowName) selectFlow(); // force select event
+  console.log(THIS, `firstFlow: ${firstFlow}`);
+  if (firstFlow) selectFlow(); // force select event
 }
 
 /*
@@ -218,19 +167,43 @@ async function fillFlowSelector() {
  */
 let file = null;
 function updateFileInfo() {
-  const THIS = updateFileInfo.name + ' -';
-  console.log(THIS);
+  const THIS = 'updateFileInfo:';
 
   const fileList = this.files;
   if (!this.files.length) return;
 
   console.log("selected file count: " + fileList.length);
   file = fileList[0];
-  $('#file-name').html(file.name);
-  $('#file-size').html("(" + file.size + " bytes)");
+  $(UI.file_name).html(file.name);
+  $(UI.file_size).html("(" + file.size + " bytes)");
 
-  $('#process-file').prop('disabled', false);
-  $('#progress-upload').hide();
+  $(UI.process_file).prop('disabled', false);
+  $(UI.progress_upload).hide();
+};
+
+
+let flowFile = null;
+function updateFlowFileInfo(eventTarget) {
+  const THIS = 'updateFlowFileInfo:';
+
+  const fileList = eventTarget.files;
+  if (!eventTarget.files.length) return;
+
+  console.log(THIS, "selected flow file count: " + fileList.length);
+  flowFile = fileList[0];
+
+  if (! flowFile.name.startsWith('Outreach')) {
+    const message = `selected flow file (${flowFile.name}) does NOT start with "Outreach"!!!\nPlease reselect`;
+    console.log(message);
+    window.alert(message);
+    return;
+  }
+
+  $(UI.flow_file_name).html(flowFile.name);
+  $(UI.flow_file_size).html("(" + flowFile.size + " bytes)");
+
+  $(UI.process_flow_file).prop('disabled', false);
+  $(UI.progress_flow_upload).hide();
 };
 
 /*
@@ -239,7 +212,7 @@ function updateFileInfo() {
  * --------------------------------------------------------------------------------------------------------------
  */
 function csv2json(csv){
-  const THIS = csv2json.name + ' -';
+  const THIS = 'csv2json:';
   console.log(THIS);
 
   const result = [];
@@ -263,22 +236,22 @@ function csv2json(csv){
   return JSON.stringify(result); //JSON
 }
 
-/*
- * --------------------------------------------------------------------------------------------------------------
- * process json
+/* --------------------------------------------------------------------------------------------------------------
+ * requires variable 'file'
  * --------------------------------------------------------------------------------------------------------------
  */
 async function processFile(e) {
-  const THIS = processFile.name + ' -';
-  console.log(THIS);
+  const THIS = 'processFile:';
+
+  if (! file) throw Error('variable "file" not set!!!');
   try {
     console.log(THIS, 'file: ' + file.name);
     if (file.size == 0) return;
 
-    $('#progress-upload').show();
+    $(UI.progress_upload).show();
     let n = 0;
 
-    const selectedFlowName = $('#flow-selector').val();
+    const flowSid = $(UI.flow_selector).val();
 
     const reader = new FileReader();
     reader.readAsText(file);
@@ -293,7 +266,7 @@ async function processFile(e) {
       const jsonObj = JSON.parse(jsonText);
       let i = 0;
       for (let j of jsonObj) {
-        // $('#progress-upload').attr({
+        // $(UI.progress_upload).attr({
         //   value: ++i,
         //   label: `uploaded ${i} of ${n}`
         // });
@@ -306,14 +279,14 @@ async function processFile(e) {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            flowName: selectedFlowName,
+            flowSid: flowSid,
             patient: j,
             token: accessToken
           }),
         })
         .then((response) => {
           console.log(THIS, ++i, response);
-          $('#progress-upload').text(`uploaded ${n} rows`);
+          $(UI.progress_upload).text(`uploaded ${n} rows`);
         })
         .catch((err) => {
           console.log(err);
@@ -324,7 +297,59 @@ async function processFile(e) {
       alert('Unable to read ' + file.name);
     }
 
-    $('#process-file').prop('disabled', true);
+    $(UI.process_file).prop('disabled', true);
+
+  } catch (err) {
+    console.log(THIS, err);
+  }
+};
+
+/* --------------------------------------------------------------------------------------------------------------
+ * requires variable 'flowFile'
+ * --------------------------------------------------------------------------------------------------------------
+ */
+async function processFlowFile(e) {
+  const THIS = 'processFlowFile:';
+
+  if (! flowFile) throw Error('variable "flowFile" not set!!!');
+  try {
+    console.log(THIS, 'file: ' + flowFile);
+    if (flowFile.size == 0) return;
+
+    $(UI.progress_flow_upload).show();
+
+    const reader = new FileReader();
+    reader.readAsText(flowFile);
+    reader.onload = function(event) {
+      console.log(THIS, 'reader.onload');
+      const flowDefinition = event.target.result;
+
+//      const data = csv.split(/\r?\n/);
+
+      fetch(`/add-flow`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          flowName: flowFile.name.replace('.json', ''),
+          flowDefinition: flowDefinition,
+          token: accessToken
+        }),
+      })
+        .then((response) => {
+          $(UI.progress_flow_upload).text(`uploaded flow definition`);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    };
+    reader.onerror = function() {
+      alert('Unable to read ' + flowFile.name);
+    }
+
+    $(UI.process_flow_file).prop('disabled', true);
 
   } catch (err) {
     console.log(THIS, err);
@@ -337,13 +362,13 @@ async function processFile(e) {
  * --------------------------------------------------------------------------------------------------------------
  */
 async function downloadResponses(e) {
-  const THIS = downloadResponses.name + ' -';
-  console.log(THIS);
-  try {
-    $('#download-responses').prop('disabled', true);
-    $('#progress-download').show();
+  const THIS = 'downloadResponses:';
 
-    const selectedFlowName = $('#flow-selector').val();
+  try {
+    $(UI.download_response).prop('disabled', true);
+    $(UI.progress_download).show();
+
+    const flowSid = $(UI.flow_selector).val();
     const orientation = 'ROW';
     let body = null;
 
@@ -354,7 +379,7 @@ async function downloadResponses(e) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        flowName: selectedFlowName,
+        flowSid: flowSid,
         orientation: orientation,
         token: accessToken,
       }),
@@ -368,13 +393,13 @@ async function downloadResponses(e) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        flowName: selectedFlowName,
+        flowSid: flowSid,
         token: accessToken,
       }),
     });
     const execution_sids = JSON.parse(await response.text());
 
-    $('#progress-download').attr({
+    $(UI.progress_download).attr({
       max: execution_sids.length,
       value: 0,
       label: `downloaded 0 of ${execution_sids.length}`
@@ -389,14 +414,14 @@ async function downloadResponses(e) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          flowName: selectedFlowName,
+          flowSid: flowSid,
           execution_sid: esid,
           orientation: orientation,
           token: accessToken,
         }),
       });
       const row = await response.text();
-      $('#progress-download').attr({
+      $(UI.progress_download).attr({
         value: ++i,
         label: `downloaded ${i} of ${execution_sids.length}`
       });
@@ -412,8 +437,8 @@ async function downloadResponses(e) {
   } catch (err) {
     console.log(THIS, err);
   } finally {
-    $('#progress-download').hide();
-    $('#download-responses').prop('disabled', false);
+    $(UI.progress_download).hide();
+    $(UI.download_response).prop('disabled', false);
   }
 }
 
@@ -424,7 +449,7 @@ async function downloadResponses(e) {
  * --------------------------------------------------------------------------------------------------------------
  */
 async function initialize() {
-  fillFlowSelector();
+  populateFlowSelector();
 
   const inputElement = document.getElementById('patient-file');
   const fileSelect = document.getElementById('select-file');
@@ -438,6 +463,6 @@ async function initialize() {
   // eventListener must be placed AFTER addEventListener
   document.getElementById("process-file").addEventListener("click", processFile);
 
-  const downloadButton = document.getElementById('download-responses');
-  downloadButton.addEventListener("click", downloadResponses);
+//  const downloadButton = document.getElementById('download-responses');
+//  downloadButton.addEventListener("click", downloadResponses);
 }

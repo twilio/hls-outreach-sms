@@ -165,93 +165,9 @@ async function setParam(context, key, value) {
 }
 
 
-/* --------------------------------------------------------------------------------
- * get/add/remove flow friendly name
- *
- * use environment variable TWILIO_FLOWS
- * --------------------------------------------------------------------------------
- */
-function getFlowFriendlyNames(context) {
-  const flows = JSON.parse(context.APPLICATION_STUDIO_FLOWS);
-  return flows;
-}
-
-// --------------------------------------------------------------------------------
-function addFlowFriendlyName(context, friendlyName) {
-  const flows = JSON.parse(context.APPLICATION_STUDIO_FLOWS);
-  if (! friendlyName) {
-    console.log('friendlyName is empty!');
-    return null;
-  }
-
-  try {
-    if (flows.indexOf(friendlyName) > -1) {
-      console.log(`friendlyName=${friendlyName} already exists!`);
-      return null;
-    }
-    flows.push(friendlyName);
-
-    setParam(context, 'APPLICATION_STUDIO_FLOWS', JSON.stringify(flows));
-  } catch (err) {
-    console.log(`error setting friendlyName=${friendlyName}!`);
-    return null;
-  }
-
-  return friendlyName;
-}
-
-// --------------------------------------------------------------------------------
-function removeFlowFriendlyName(context, friendlyName) {
-  const flows = JSON.parse(context.APPLICATION_STUDIO_FLOWS);
-
-  if (! friendlyName) {
-    console.log('friendlyName is empty!');
-    return null;
-  }
-
-  try {
-    i = flows.indexOf(friendlyName);
-    if (i === -1) {
-      console.log(`friendlyName=${friendlyName} does not exist!`);
-      return null;
-    }
-    flows.splice(friendlyName, 1);
-
-    setParam(context, 'APPLICATION_STUDIO_FLOWS', JSON.stringify(flows));
-  } catch (err) {
-    console.log(`error setting friendlyName=${friendlyName}!`);
-    return null;
-  }
-
-  return friendlyName;
-}
-
-// --------------------------------------------------------------------------------
-async function assignPhone2Flow(context, flow_sid) {
-  const PHONE_NUMBER = await getParam(context, 'TWILIO_PHONE_NUMBER');
-
-  const client = context.getTwilioClient();
-
-  const flow = await client.studio.flows(flow_sid).fetch();
-
-  const phoneList = await client.incomingPhoneNumbers.list();
-  const phone = phoneList.find(p => p.phoneNumber === PHONE_NUMBER);
-  assert(phone, `Phone number ${PHONE_NUMBER} not found!!!`);
-
-  await client.incomingPhoneNumbers(phone.sid).update({
-    smsUrl: flow.webhookUrl
-  });
-
-  return phone.sid;
-}
-
 // --------------------------------------------------------------------------------
 module.exports = {
   getParam,
   setParam,
   deprovisionParams,
-  getFlowFriendlyNames,
-  addFlowFriendlyName,
-  removeFlowFriendlyName,
-  assignPhone2Flow,
 };

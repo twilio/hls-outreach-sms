@@ -19,14 +19,12 @@
  * - configurationValues : { key: value, ... }
  * --------------------------------------------------------------------------------
  */
-const assert = require("assert");
-const { getParam, assertLocalhost } = require(Runtime.getFunctions()['helpers'].path);
-const path = require("path");
-const fs = require("fs");
-const configure_env = require("configure-env");
-
 exports.handler = async function (context, event, callback) {
   const THIS = 'get-configuration:';
+
+  const assert = require("assert");
+  const { getParam } = require(Runtime.getFunctions()['helpers'].path);
+
   assert(context.DOMAIN_NAME.startsWith('localhost:'), `Can only run on localhost!!!`);
   assert(context.ACCOUNT_SID, 'ACCOUNT_SID not set!!!');
 
@@ -60,7 +58,7 @@ exports.handler = async function (context, event, callback) {
 
     // ---------- configuration variables
     {
-      const variables = await readConfigurationVariables();
+      const variables = await read_configuration_variables();
 
       console.log(THIS, `read ${variables.length} variables`);
       response.configurationVariables = variables;
@@ -71,23 +69,21 @@ exports.handler = async function (context, event, callback) {
     {
       const application_name = await getParam(context, 'APPLICATION_NAME');
       const service_sid = await getParam(context, 'SERVICE_SID');
-      if (service_sid) {
-        console.log(THIS, `found deployed service ${application_name}, retrieving variable values`);
-
-        // console.log(THIS, `provisioning any auto-provisioned variables`);
-        // await provisionVariables(context);
-
-        // check local variable values first
-        if (context.DOMAIN_NAME.startsWith('localhost:')) {
-          const n = Object.keys(context).length;
-          console.log(THIS, `retrieved ${n} variable values from localhost context`);
-          // console.log(THIS, values);
-          for (const variable of response.configurationVariables) {
-            if (context[variable.key]) {
-              variable['value'] = context[variable.key];
-            }
+      // check local variable values first, if running localhost with .env.localhost
+      if (context.DOMAIN_NAME.startsWith('localhost:')) {
+        const n = Object.keys(context).length;
+        console.log(THIS, `retrieved ${n} variable values from localhost context`);
+        // console.log(THIS, values);
+        for (const variable of response.configurationVariables) {
+          if (context[variable.key]) {
+            variable['value'] = context[variable.key];
           }
         }
+      }
+
+      if (service_sid) {
+        // check variable values from deployed service second, if service is deployed
+        console.log(THIS, `found deployed service ${application_name}, retrieving variable values`);
 
         const environment_sid = await getParam(context, 'ENVIRONMENT_SID');
         const values = await client.serverless
@@ -125,27 +121,14 @@ exports.handler = async function (context, event, callback) {
  * uses configure-env to parse .env file (https://www.npmjs.com/package/configure-env)
  * --------------------------------------------------------------------------------
  */
-async function readConfigurationVariables() {
+async function read_configuration_variables() {
   const path = require('path');
-  const path_env = path.join(process.cwd(), '.env');
   const fs = require('fs');
   const configure_env = require('configure-env');
 
-  const payload = fs.readFileSync(path_env, 'utf8');
+  const fpath = path.join(process.cwd(), '.env');
+  const payload = fs.readFileSync(fpath, 'utf8');
   const configuration = configure_env.parser.parse(payload);
 
   return configuration.variables;
-}
-
-/* --------------------------------------------------------------------------------
- * provision any auto-provisioned variables defined in .env file
- * --------------------------------------------------------------------------------
- */
-async function provisionVariables(context) {
-  const variables = await readConfigurationVariables();
-
-  const keys = variables.map(v => v.key);
-  for(const k of keys) {
-    await getParam(context, k);
-  }
 }

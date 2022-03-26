@@ -68,19 +68,13 @@
   </div>
   <main style="display: none">
     <section>
+      <div class="flow-loader"></div>
       <h4>Selected Studio Flow:
       <select id="flow-selector" onchange="selectFlow(null);"></select>
       </h4>
-      <div class="flow-loader"></div>
-      <div id="flow-deploy" style="display: none;" class="deployer">
-        <h5>Your Studio Flow is not yet deployed</h5>
-        <a class="button" onclick="deployStudioFlow(event);">Deploy Studio Flow</a>
-        <div id="flow-loader button-loader" style="display: none;"></div>
-      </div>
-      <div id="flow-deployed" style="display: none;" class="deployer">
-        <h5><span class="checkmark">&#10003;</span> Your Studio Flow is deployed</h5>
-        <a id="flow-open" class="button button-outline" href="" target="_blank">Open Studio Flow</a>
-      </div>
+      <a id="flow-open" class="button button-outline" href="" target="_blank">Open Studio Flow</a>
+      <br/>
+      <br/>
     </section>
 
     <section id="upload">
@@ -91,7 +85,7 @@
         <h5><b>selected file:</b>
         <span id="file-name"></span> <span id="file-size"></span>
         </h5>
-        <button class="button" id="process-file" disabled>Upload & Process File</button>
+        <button class="button" id="process-file" disabled>Process File</button>
         <br/>
         <h5><span id="progress-upload" style="display: none;"></span></h5>
       </div>
@@ -105,9 +99,22 @@
       <br/>
       <h4>Download</h4>
 
-      <button class="button" id="download-responses">Download Responses</button>
+      <button class="button" id="download-responses" onclick="downloadResponses(event);">Download Responses</button>
       <br/>
       <progress id="progress-download" style="display: none;"></progress>
+    </section>
+
+    <section id="add">
+      <br/>
+      <h4>Add New Studio Flow</h4>
+      <input type="file" id="flow-file" accept=".json" onchange="updateFlowFileInfo(this);" style="display:none">
+      <button class="button" id="select-flow-file" onclick="$('#flow-file').click();">select flow json file to add</button>
+      <h5><b>selected flow file:</b>
+        <span id="flow-file-name"></span> <span id="flow-file-size"></span>
+      </h5>
+      <button class="button" id="process-flow-file" onclick="processFlowFile(event);">Add Flow</button>
+      <br/>
+      <h5><span id="progress-flow-upload" style="display: none;" disabled></span></h5>
     </section>
 
     <script>

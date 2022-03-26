@@ -1,22 +1,16 @@
 'use strict';
 /* --------------------------------------------------------------------------------
- * list executions of studio flow specified via event.flowName
- *
- * event:
- * . flowSid: SID of studio flow
- *
- * returns:
- * - json array of execution SIDs, if successful
+ * remove existing flow from this blueprint
  * --------------------------------------------------------------------------------
  */
-
 const assert = require("assert");
-exports.handler = async function(context, event, callback) {
-  const THIS = 'list-executions:';
+exports.handler = async function (context, event, callback) {
+  const THIS = 'remove-flow:';
 
   const assert = require('assert');
-  const { getParam } = require(Runtime.getFunctions()['helpers'].path);
   const { isValidAppToken } = require(Runtime.getFunctions()["authentication-helper"].path);
+  const { get_flow_sid }  = require(Runtime.getFunctions()['list-flows'].path);
+  const { undeploy_studio_flow }  = require(Runtime.getFunctions()['installer/deploy'].path);
 
   /* Following code checks that a valid token was sent with the API call */
   if (!isValidAppToken(event.token, context)) {
@@ -29,15 +23,16 @@ exports.handler = async function(context, event, callback) {
 
   console.time(THIS);
   try {
-    assert(event.flowSid, 'missing event.flowSid!!!');
+    assert(event.flowName, 'missing event.flowName!!!');
+    assert(event.flowName.startsWith('Outreach'), `flowName=${event.flowName} does NOT start with 'Outreach' !!!`);
 
-    const client = context.getTwilioClient();
-    const executions = await client.studio.flows(event.flowSid).executions.list();
-    const response = executions
-      .filter(e => e.status === 'ended') // TODO: may need to restrict to last hour, etc. if there are too many
-      .map(e => e.sid);
+    const flowExists = await get_flow_sid(context, event.flowName);
+    assert(flowExists, `flowName=${event.flowName} is not deployed !!!`);
 
-    return callback(null, response);
+    const flow = await undeploy_studio_flow(context, event.flowName);
+
+    console.log(THIS, flow);
+    return callback(null, flow);
 
   } catch (err) {
     console.log(THIS, err);

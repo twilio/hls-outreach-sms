@@ -133,22 +133,56 @@ undeploy-service: confirm-delete get-service-sid get-verify-sid
 	rm -f .twiliodeployinfo
 
 
-deploy-flows:
-	echo TODO: deloy flows
+get-flow-sid:
+	$(eval FLOW_SID := $(shell twilio api:studio:v2:flows:list -o=json \
+	| jq --raw-output '.[] | select(.friendlyName == "$(FLOW_FNAME)") | .sid'))
 
 
-undeploy-flows:
-	echo TODO: undeploy flows
+deploy-flow: get-flow-sid
+	@if [[ -z "$(FLOW_FNAME)" || -z "$(FLOW_DEFINITION_FILE)" ]]; then \
+  	  echo 'Usage: make deploy-flow FLOW_FNAME={your-flow-fname} FLOW_DEFINITION_FILE={path-to-flow-json-file}'; \
+  	  exit 1; \
+  	fi
+
+	@echo "validating flow definition for flow=$(FLOW_FNAME)"
+	twilio api:studio:v2:flows:validate:create \
+	   --friendly-name $(FLOW_FNAME) \
+	   --status 'published' \
+	   --definition "`cat $(FLOW_DEFINITION_FILE)`"
+
+	@if [[ -z "$(FLOW_SID)" ]]; then \
+	  echo "creating flow=$(FLOW_FNAME)"; \
+	  twilio api:studio:v2:flows:create \
+	  --friendly-name $(FLOW_FNAME) \
+	  --status 'published' \
+	  --commit-message 'deployed via installer' \
+	  --definition "`cat $(FLOW_DEFINITION_FILE)`"; \
+    else \
+	  echo "updating flow=$(FLOW_FNAME)"; \
+	  twilio api:studio:v2:flows:update \
+	  --sid $(FLOW_SID) \
+	  --status 'published' \
+	  --commit-message 'deployed via installer' \
+	  --definition "`cat $(FLOW_DEFINITION_FILE)`"; \
+    fi
 
 
-deploy-all:  deploy-service deploy-flows
+undeploy-flow: get-flow-sid
+	@if [[ -z "$(FLOW_FNAME)" ]]; then \
+  	  echo 'Usage: make deploy-flow FLOW_FNAME={your-flow-fname}'; \
+	  exit 1; \
+	fi
+
+	echo "deleting flow=$(FLOW_FNAME)";
+	twilio api:studio:v2:flows:remove --sid $(FLOW_SID)
+
+
+deploy-all:  deploy-service make-service-editable
 	@echo deployed and configured!
-	@echo If initial deployment, also execute "make make-service-editable"
 
 
-undeploy-all: undeploy-flows undeploy-service
+undeploy-all: undeploy-service
 	@echo undeployed!
-	@echo If initial deployment, also execute "make make-service-editable"
 
 
 run-serverless:
