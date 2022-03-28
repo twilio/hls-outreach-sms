@@ -32,66 +32,23 @@ const timer = (ms) => new Promise((res) => setTimeout(res, ms));
 
 /*
  * --------------------------------------------------------------------------------------------------------------
- * deploy flow name
- *
- * references:
- *    #flow-selector
- * --------------------------------------------------------------------------------------------------------------
- */
-async function deployStudioFlow(e) {
-  const THIS = deployStudioFlow.name + ' -';
-  console.log(THIS);
-
-  const selectedFlowName = $('#flow-selector').val();
-  console.log(THIS, 'selected flow: ', selectedFlowName);
-
-  e.preventDefault();
-  $('#flow-deploy .button').addClass('loading');
-  $('.flow-loader.button-loader').show();
-
-  try {
-    const response = await fetch('/deployment/deploy-studio-flow', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({flowName: selectedFlowName, token: accessToken}),
-    });
-    if (!response.ok) {
-      throw Error(response.statusText);
-    }
-    console.log(THIS, await response.text());
-
-    await checkStudioFlow();
-
-    await assignPhone2Flow(selectedFlowName);
-
-  } catch (err) {
-    console.log(THIS, err);
-    $(`#flow-deploy .button`).removeClass('loading');
-    $('.flow-loader.button-loader').hide();
-  }
-}
-
-
-/*
- * --------------------------------------------------------------------------------------------------------------
  * select specified flowName and check Flow deployment
  *
- * references:
- *    #flow-selector
- * calls:
- *    checkStudioFlow()
+ * input:
+ * - toSelectOptionValue: option value to force select, if null, looks for seleted option from UI element
  * --------------------------------------------------------------------------------------------------------------
  */
-async function selectFlow() {
+async function selectFlow(toSelectOptionValue) {
   const THIS = 'selectFlow:';
 
   try {
+    if (toSelectOptionValue) {
+      $(UI.flow_selector).val(toSelectOptionValue);
+      console.log(THIS, 'selecting: ', toSelectOptionValue);
+    }
     const flowFName = $(UI.flow_selector).text();
     const flowSid = $(UI.flow_selector).val();
-    console.log(THIS, flowFName, flowSid)
+    console.log(THIS, 'selected: ', flowFName, flowSid);
 
     // reset section
     $('.flow-loader').hide();
@@ -122,16 +79,12 @@ async function selectFlow() {
  * --------------------------------------------------------------------------------------------------------------
  * fill flowSelector from available flow template assets
  *
- * references:
- *    #flow-selector
- * calls:
- *    selectFlow()
+ * returns: first option UI element value
  * --------------------------------------------------------------------------------------------------------------
  */
 async function populateFlowSelector() {
   const THIS = 'populateFlowSelector:';
 
-  let firstFlow = null;
   try {
     const response = await fetch('/list-flows', {
       method: 'POST',
@@ -144,20 +97,18 @@ async function populateFlowSelector() {
     const flows = await response.json();
     console.log(THIS, `retrieved ${flows.length} flows`);
     $(UI.flow_selector).clear;
-    let selected = 'selected';
+    let firstOptionValue = null;
     for (f of flows) {
-      $(UI.flow_selector).append(`<option value="${f.flow_sid}" ${selected}>${f.friendlyName}</option>`);
-      if (!firstFlow) {
-        firstFlow = f;
-        selected = '';
+      $(UI.flow_selector).append(`<option value="${f.flow_sid}">${f.friendlyName}</option>`);
+      if (!firstOptionValue) {
+        firstOptionValue = f.flow_sid;
       }
     }
+    return firstOptionValue;
+
   } catch (err) {
     console.log(THIS, 'Error fetching flow!!!');
   }
-
-  console.log(THIS, `firstFlow: ${firstFlow}`);
-  if (firstFlow) selectFlow(); // force select event
 }
 
 /*
@@ -320,13 +271,13 @@ async function processFlowFile(e) {
 
     const reader = new FileReader();
     reader.readAsText(flowFile);
-    reader.onload = function(event) {
+    reader.onload = async function(event) {
       console.log(THIS, 'reader.onload');
       const flowDefinition = event.target.result;
 
 //      const data = csv.split(/\r?\n/);
 
-      fetch(`/add-flow`, {
+      const response = await fetch(`/add-flow`, {
         method: 'POST',
         headers: {
           Accept: 'application/json',
@@ -337,19 +288,19 @@ async function processFlowFile(e) {
           flowDefinition: flowDefinition,
           token: accessToken
         }),
-      })
-        .then((response) => {
-          $(UI.progress_flow_upload).text(`uploaded flow definition`);
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+      });
+      const flow = await response.json();
+
+      $(UI.progress_flow_upload).text(`uploaded flow definition`);
+
+      $(UI.process_flow_file).prop('disabled', true);
+
+      await populateFlowSelector(null);
+      selectFlow(flow.sid);
     };
     reader.onerror = function() {
       alert('Unable to read ' + flowFile.name);
     }
-
-    $(UI.process_flow_file).prop('disabled', true);
 
   } catch (err) {
     console.log(THIS, err);
@@ -449,7 +400,10 @@ async function downloadResponses(e) {
  * --------------------------------------------------------------------------------------------------------------
  */
 async function initialize() {
-  populateFlowSelector();
+  const THIS = 'initialize:';
+
+  const firstOptionValue = await populateFlowSelector();
+  await selectFlow(firstOptionValue);
 
   const inputElement = document.getElementById('patient-file');
   const fileSelect = document.getElementById('select-file');
