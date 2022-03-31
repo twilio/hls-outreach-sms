@@ -75,28 +75,21 @@ async function getParam(context, key) {
       return service.sid;
     }
 
-    case 'STUDIO_FLOWS': {
-      const all_flows = await client.studio.flows.list();
-      const outreach_flows = all_flows.filter(f => f.friendlyName.startsWith('Outreach'));
-
-      const flows = outreach_flows.map(f => ({ [f.friendlyName]: f.sid }));
-      await setParam(context, key, JSON.stringify(flows));
-      return JSON.stringify(flows);
-    }
-
-    case 'TWILIO_FLOW_SID':
-    {
-      // context.friendlyName required, returns null if not supplied
-      if (! context.flowName) return null;
-
-      const flows = await client.studio.flows.list();
-      const flow = flows.find(f => f.friendlyName === context.flowName);
-
-      return flow ? flow.sid : null;
-    }
-
     default:
       throw new Error(`Undefined variable ${key} !!!`);
+  }
+}
+
+
+/* --------------------------------------------------------------------------------
+ * deprovision environment variable
+ * --------------------------------------------------------------------------------
+ */
+async function provisionParams(context) {
+  const client = context.getTwilioClient();
+
+  return {
+    'VERIFY_SID': await getParam(context, 'VERIFY_SID'),
   }
 }
 
@@ -108,16 +101,23 @@ async function getParam(context, key) {
 async function deprovisionParams(context) {
   const client = context.getTwilioClient();
 
-  const verify_sid = await getParam(context, key);
+  const resources = {};
+
+  const verify_sid = await getParam(context, 'VERIFY_SID');
   if (!verify_sid) return; // do nothing if no value
 
   let verify_service = null;
   try {
     verify_service = await client.verify.services(verify_sid).fetch();
+    if (verify_service) {
+      await client.verify.services(verify_sid).remove();
+      resources['VERIFY_SID'] = verify_sid;
+    }
   } catch (err) {
     console.log(`no verify service SID=${verify_sid}. skpping...`);
   }
-  if (verify_service) await client.verify.services(verify_sid).remove();
+
+  return resources;
 }
 
 
@@ -157,7 +157,6 @@ async function setParam(context, key, value) {
       .then((v) => console.log('setParam: created variable', v.key));
   }
 
-  context[key] = value;
   return {
     key: key,
     value: value
