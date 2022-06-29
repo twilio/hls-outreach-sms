@@ -23,7 +23,8 @@ SERVICE_UNAME    := $(APPLICATION_NAME)
 VERIFY_FNAME     := $(APPLICATION_NAME)
 VERSION          := $(shell jq --raw-output .version package.json)
 INSTALLER_NAME   := hls-outreach-installer
-INSTALLER_TAG    := twiliohls/$(INSTALLER_NAME):$(VERSION)
+INSTALLER_TAG_V  := twiliohls/$(INSTALLER_NAME):$(VERSION)
+INSTALLER_TAG_L  := twiliohls/$(INSTALLER_NAME):latest
 GIT_REPO_URL     := $(shell git config --get remote.origin.url)
 CPU_HARDWARE     := $(shell uname -m)
 DOCKER_EMULATION := $(shell [[ `uname -m` == "arm64" ]] && echo --platform linux/amd64)
@@ -31,7 +32,7 @@ $(info =========================================================================
 $(info APPLICATION_NAME   : $(APPLICATION_NAME))
 $(info GIT_REPO_URL       : $(GIT_REPO_URL))
 $(info INSTALLER_NAME     : $(INSTALLER_NAME))
-$(info INSTALLER_TAG      : $(INSTALLER_TAG))
+$(info INSTALLER_TAG_V    : $(INSTALLER_TAG_V))
 $(info CPU_HARDWARE       : $(shell uname -m))
 $(info DOCKER_EMULATION   : $(DOCKER_EMULATION))
 $(info TWILIO_ACCOUNT_NAME: $(shell twilio api:core:accounts:fetch --sid=$(TWILIO_ACCOUNT_SID) --no-header --properties=friendlyName))
@@ -48,16 +49,18 @@ targets:
 
 
 installer-build-github:
-	docker build --tag $(INSTALLER_TAG) $(DOCKER_EMULATION) --no-cache $(GIT_REPO_URL)#main
+	$(eval BRANCH := $(shell if [[ -z "$(BRANCH)" ]]; then echo 'main'; else echo $(BRANCH); fi))
+	docker build --tag $(INSTALLER_TAG_V) --tag $(INSTALLER_TAG_L) $(DOCKER_EMULATION) --no-cache $(GIT_REPO_URL)#$(BRANCH)
 
 
 installer-build-local:
-	docker build --tag $(INSTALLER_TAG) $(DOCKER_EMULATION) --no-cache .
+	docker build --tag $(INSTALLER_TAG_V) --tag $(INSTALLER_TAG_L) $(DOCKER_EMULATION) --no-cache .
 
 
 installer-push:
 	docker login --username twiliohls
-	docker push $(INSTALLER_TAG)
+	docker push $(INSTALLER_TAG_V)
+	docker push $(INSTALLER_TAG_L)
 	docker logout
 	open -a "Google Chrome" https://hub.docker.com/r/twiliohls/$(INSTALLER_NAME)
 
@@ -65,7 +68,7 @@ installer-push:
 installer-run:
 	docker run --name $(INSTALLER_NAME) --rm --publish 3000:3000 $(DOCKER_EMULATION) \
 	--env ACCOUNT_SID=$(TWILIO_ACCOUNT_SID) --env AUTH_TOKEN=$(TWILIO_AUTH_TOKEN) \
-	--interactive --tty $(INSTALLER_TAG)
+	--interactive --tty $(INSTALLER_TAG_V)
 
 
 installer-open:
