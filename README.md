@@ -6,13 +6,15 @@ who are interested in the installing & using the Patient Outreach application.*
 *Installation of this application is supported using the latest versions of Chrome and Firefox.
 Installation via Internet Explorer has not been officially tested and although issues are not expected, unforeseen problems may occur.*
 
-- [Installation Information](#install)
-- [Application Overview](#application)
-- [Architecture & Components](#architecture)
+- [Installation](#installation)
+- [Application Overview](#application-overview)
+- [Architecture & Components](#architecture--components)
 
-## <a name="install"></a>Installation Information
-***
-***
+---
+
+## Installation
+
+---
 
 This section details the requirements for a successful deployment and installation of the prototype application, including the necessary prerequisite steps, the variables that are needed to initiate installation, and the installation steps themselves.
 
@@ -115,10 +117,11 @@ To terminate installer:
 
 Please reference the [Customer Implementation Guide](https://twilio-cms-prod.s3.amazonaws.com/documents/Patient_Outreach_App_Implementation_Guide.pdf) for detailed steps.
 
+---
 
-## <a name="application"></a>Application Overview
-***
-***
+## Application Overview
+
+---
 
 The 'hls-outreach-sms' app packages together the core components of a deployable prototype for SMS-based outreach.
 This app aims to support healthcare providers, payors, and life sciences organizations
@@ -133,9 +136,12 @@ but rather will allow the installation of a functioning prototype
 into a test environment for exploration of how Twilio components
 and functions can be leveraged to meet various business needs.
 
-## <a name="architecture"></a>Architecture & Components
-***
-***
+---
+
+## Architecture & Components
+
+---
+
 This section provides an overview of the application's architecture,
 including a discussion of the baked-in Twilio components
 (which orchestrate the automated SMS conversation with the recipient),

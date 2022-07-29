@@ -11,6 +11,8 @@
  * ----------------------------------------------------------------------------------------------------
  */
 const assert = require("assert");
+const path = require("path");
+const fs = require("fs");
 
 /* --------------------------------------------------------------------------------
  * retrieve environment variable value
@@ -35,6 +37,21 @@ async function getParam(context, key) {
 
       // return sid only if deployed; otherwise null
       return service ? service.sid : null;
+    }
+
+    case 'APPLICATION_VERSION':
+    {
+      const service_sid = await getParam(context, 'SERVICE_SID');
+      if (service_sid === null) return null; // service not yet deployed, therefore return 'null'
+
+      const environment_sid = await getParam(context, 'ENVIRONMENT_SID');
+      const variables = await client.serverless
+        .services(service_sid)
+        .environments(environment_sid)
+        .variables.list();
+      const variable = variables.find(v => v.key === 'APPLICATION_VERSION');
+
+      return variable ? variable.value : null;
     }
 
     case 'ENVIRONMENT_SID': // always required
@@ -164,9 +181,26 @@ async function setParam(context, key, value) {
 }
 
 
+/* --------------------------------------------------------------------------------
+ * read version attribute from package.json
+ * --------------------------------------------------------------------------------
+ */
+async function fetchVersionToDeploy() {
+  const fs = require('fs');
+  const path = require('path');
+
+  const fpath = path.join(process.cwd(), 'package.json');
+  const payload = fs.readFileSync(fpath, 'utf8');
+  const json = JSON.parse(payload);
+
+  return json.version;
+}
+
+
 // --------------------------------------------------------------------------------
 module.exports = {
   getParam,
   setParam,
+  fetchVersionToDeploy,
   deprovisionParams,
 };

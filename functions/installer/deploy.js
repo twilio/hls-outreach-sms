@@ -14,7 +14,7 @@ exports.handler = async function(context, event, callback) {
   const THIS = 'deploy:';
 
   const assert = require("assert");
-  const { getParam } = require(Runtime.getFunctions()['helpers'].path);
+  const { getParam, setParam, fetchVersionToDeploy } = require(Runtime.getFunctions()['helpers'].path);
 
   assert(context.DOMAIN_NAME.startsWith('localhost:'), `Can only run on localhost!!!`);
   console.time(THIS);
@@ -44,7 +44,9 @@ exports.handler = async function(context, event, callback) {
         const templates = await deploy_studio_flow_templates(context);
         console.log(THIS, `deployed ${templates.length} studio flow template(s)`);
 
-        console.log(THIS, `Completed deployment of ${application_name}`);
+        const version_to_deploy = await fetchVersionToDeploy();
+        await setParam(context, 'APPLICATION_VERSION', version_to_deploy);
+        console.log(THIS, `Completed deployment of ${application_name}:${version_to_deploy}`);
 
         const response = {
           status: event.action,

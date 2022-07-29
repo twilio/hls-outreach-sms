@@ -15,7 +15,7 @@ exports.handler = async function (context, event, callback) {
   const THIS = 'check:';
 
   const assert = require("assert");
-  const { getParam } = require(Runtime.getFunctions()['helpers'].path);
+  const { getParam, fetchVersionToDeploy } = require(Runtime.getFunctions()['helpers'].path);
 
   assert(context.DOMAIN_NAME.startsWith('localhost:'), `Can only run on localhost!!!`);
   console.time(THIS);
@@ -29,6 +29,10 @@ exports.handler = async function (context, event, callback) {
 
     const response = {
       deploy_state: (service_sid) ? 'DEPLOYED' : 'NOT-DEPLOYED',
+      version: {
+        deployed : application_version,
+        to_deploy: await fetchVersionToDeploy(),
+      },
       service_sid: service_sid,
       application_url: application_url,
       template_flows: template_flows,
