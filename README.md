@@ -96,7 +96,7 @@ If running on Apple Silicon (M1 chip), add `--platform linux/amd64` option.
 Replace `${TWILIO_ACCOUNT_SID}` and `${TWILIO_AUTH_TOKEN}` with that of your target Twilio account.
 
 ```shell
-docker run --name hls-outreach-installer --rm --publish 3000:3000  \
+docker run --pull=always --name hls-outreach-installer --rm --publish 3000:3000  \
 --env ACCOUNT_SID=${TWILIO_ACCOUNT_SID} --env AUTH_TOKEN=${TWILIO_AUTH_TOKEN} \
 --interactive --tty hls-website-installer
 ```
