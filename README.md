@@ -1,3 +1,5 @@
+# ⚠️ This repository has been archived and is no longer actively maintained. ⚠️
+
 # Patient Outreach Application: Technical Guide
 
 *This document is intended to serve as a technical guide for customers
