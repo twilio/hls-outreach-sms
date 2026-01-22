@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "twilio": "^3.56",
-    "jsonwebtoken": "^8.5.1"
+    "jsonwebtoken": "^9.0.0"
   },
   "devDependencies": {
     "twilio-run": "^2.6.0"
